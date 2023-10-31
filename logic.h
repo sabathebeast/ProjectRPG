@@ -17,12 +17,21 @@ public:
 private:
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
+	void createAllGameEntity();
 	void initializeTexture(Texture& texture, const char* filePath);
+	void initializeAllTexture();
 	void initializeSound(Sound& sound, const char* filePath);
+	void initializeAllSound();
 	void drawObject();
 	void playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multiplyer, int i);
 	void closeBag();
 	void openBag();
+	void showQuest();
+	void bagUI();
+	void handleOpenCloseBag();
+	void handleInventoryIsFull();
+	void playerMovementAndCollisions(float deltaTime);
+	void getPlayerFramesXY();
 	Texture playerTexture;
 	Texture mapTexture;
 	Texture vendorTexture;

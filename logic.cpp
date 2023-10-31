@@ -21,63 +21,12 @@ Inventory inventory;
 
 Logic::Logic()
 {
-	initializeTexture(playerTexture, "./Assets/playerSprite.png");
-	initializeTexture(mapTexture, "./Map/WorldMap.png");
-	initializeTexture(vendorTexture, "./Assets/adventurer_idle.png");
-	initializeTexture(woodStashTexture, "./Assets/wood_stash.png");
-	initializeTexture(bagTexture, "./Assets/bag.png");
-	initializeTexture(goldCurrencyTexture, "./Assets/goldCurrency.png");
-	initializeTexture(fishTexture, "./Assets/fish.png");
-	initializeTexture(barrelTexture, "./Assets/barrel.png");
-
-	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
-	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
-
-	for (int i = 0; i < 10; i++)
-	{
-		int RandomX = GetRandomValue(0 + woodStashTexture.width, GetScreenWidth() - woodStashTexture.width);
-		int RandomY = GetRandomValue(0 + woodStashTexture.height, GetScreenHeight() - woodStashTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
-	}
-
-	for (int i = 0; i < 10; i++)
-	{
-		int RandomX = GetRandomValue(0 + fishTexture.width, GetScreenWidth() - fishTexture.width);
-		int RandomY = GetRandomValue(0 + fishTexture.height, GetScreenHeight() - fishTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
-	}
-
-	for (int i = 0; i < 10; i++)
-	{
-		int RandomX = GetRandomValue(0 + barrelTexture.width, GetScreenWidth() - barrelTexture.width);
-		int RandomY = GetRandomValue(0 + barrelTexture.height, GetScreenHeight() - barrelTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
-	}
-
-	for (auto& entities : gameEntities)
-	{
-		if (entities.hasComponent<Sprite2DComponent>() && entities.getComponent<TagComponent>().tag == "player")
-		{
-			playerFramesX = entities.getComponent<Sprite2DComponent>().framesX;
-			playerFramesY = entities.getComponent<Sprite2DComponent>().framesY;
-		}
-	}
-
+	initializeAllTexture();
+	createAllGameEntity();
+	getPlayerFramesXY();
 	playerSpeed = 200.f;
-
 	dialogue.init();
-
-	InitAudioDevice();
-
-	initializeSound(questAcceptedSound, "./Sounds/questAccepted.wav");
-	initializeSound(closeBagSound, "./Sounds/closeBag.wav");
-	initializeSound(openBagSound, "./Sounds/openBag.wav");
-	initializeSound(coinCollectedSound, "./Sounds/coinCollected.wav");
-	initializeSound(questDoneSound, "./Sounds/questDone.wav");
-	initializeSound(inventoryFull, "./Sounds/inventoryFull.mp3");
-
-	themeSong = LoadMusicStream("./Sounds/themeSong.mp3");
-	PlayMusicStream(themeSong);
+	initializeAllSound();
 }
 
 Logic::~Logic()
@@ -112,16 +61,70 @@ void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Textu
 	gameEntities.emplace_back(gameEntity);
 }
 
+void Logic::createAllGameEntity()
+{
+	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
+	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
+
+	for (int i = 0; i < 10; i++)
+	{
+		int RandomX = GetRandomValue(0 + woodStashTexture.width, GetScreenWidth() - woodStashTexture.width);
+		int RandomY = GetRandomValue(0 + woodStashTexture.height, GetScreenHeight() - woodStashTexture.height);
+		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+	}
+
+	for (int i = 0; i < 10; i++)
+	{
+		int RandomX = GetRandomValue(0 + fishTexture.width, GetScreenWidth() - fishTexture.width);
+		int RandomY = GetRandomValue(0 + fishTexture.height, GetScreenHeight() - fishTexture.height);
+		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
+	}
+
+	for (int i = 0; i < 10; i++)
+	{
+		int RandomX = GetRandomValue(0 + barrelTexture.width, GetScreenWidth() - barrelTexture.width);
+		int RandomY = GetRandomValue(0 + barrelTexture.height, GetScreenHeight() - barrelTexture.height);
+		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+	}
+}
+
 void Logic::initializeTexture(Texture& texture, const char* filePath)
 {
 	texture = LoadTexture(filePath);
 	gameTextures.push_back(texture);
 }
 
+void Logic::initializeAllTexture()
+{
+	initializeTexture(playerTexture, "./Assets/playerSprite.png");
+	initializeTexture(mapTexture, "./Map/WorldMap.png");
+	initializeTexture(vendorTexture, "./Assets/adventurer_idle.png");
+	initializeTexture(woodStashTexture, "./Assets/wood_stash.png");
+	initializeTexture(bagTexture, "./Assets/bag.png");
+	initializeTexture(goldCurrencyTexture, "./Assets/goldCurrency.png");
+	initializeTexture(fishTexture, "./Assets/fish.png");
+	initializeTexture(barrelTexture, "./Assets/barrel.png");
+}
+
 void Logic::initializeSound(Sound& sound, const char* filePath)
 {
 	sound = LoadSound(filePath);
 	gameSounds.push_back(sound);
+}
+
+void Logic::initializeAllSound()
+{
+	InitAudioDevice();
+
+	initializeSound(questAcceptedSound, "./Sounds/questAccepted.wav");
+	initializeSound(closeBagSound, "./Sounds/closeBag.wav");
+	initializeSound(openBagSound, "./Sounds/openBag.wav");
+	initializeSound(coinCollectedSound, "./Sounds/coinCollected.wav");
+	initializeSound(questDoneSound, "./Sounds/questDone.wav");
+	initializeSound(inventoryFull, "./Sounds/inventoryFull.mp3");
+
+	themeSong = LoadMusicStream("./Sounds/themeSong.mp3");
+	PlayMusicStream(themeSong);
 }
 
 void Logic::drawObject()
@@ -132,7 +135,7 @@ void Logic::drawObject()
 		{
 			DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x), static_cast<int>(entities.getComponent<PositionComponent>().y), WHITE);
 		}
-		if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>())
+		else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>())
 		{
 			DrawTexturePro(entities.getComponent<Sprite2DComponent>().texture,
 				Rectangle{ entities.getComponent<Sprite2DComponent>().sourceX,
@@ -187,11 +190,141 @@ void Logic::openBag()
 	isBagOpen = true;
 }
 
-void Logic::Update()
+void Logic::showQuest()
 {
-	UpdateMusicStream(themeSong);
-	float deltaTime = GetFrameTime();
+	if (isQuestAccepted)
+	{
+		for (auto& items : inventory.getItems())
+		{
+			if (items.id == "woodStash")
+			{
+				if (items.quantity < 10)
+				{
+					std::string questText = "[?] Collect 10 wood sticks";
+					questTextSize = MeasureText(questText.c_str(), 20);
+					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
+				}
+				else
+				{
+					std::string questText = "[=] Collect 10 wood sticks";
+					questTextSize = MeasureText(questText.c_str(), 20);
+					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
+				}
 
+				int questDescriptionSize = MeasureText("Wood sticks:", 20);
+				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
+				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
+				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
+				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
+			}
+		}
+	}
+}
+
+void Logic::bagUI()
+{
+	if (isBagOpen)
+	{
+		int inventoryWidth = 210;
+		int inventoryHeight = 210;
+		int inventoryPositionX = GetScreenWidth() - inventoryWidth - 5;
+		int inventoryPositionY = GetScreenHeight() - inventoryHeight - 5;
+		DrawRectangle(inventoryPositionX, inventoryPositionY, inventoryWidth, inventoryHeight, GRAY);
+		DrawText("INVENTORY [i]", inventoryPositionX + 2, inventoryPositionY + 2, 25, BLACK);
+		int closeWindowPositionX = inventoryPositionX + inventoryWidth - 20;
+		int closeWindowPositionY = inventoryPositionY;
+		int closeWindowTextSize = MeasureText("x", 25);
+		DrawRectangle(closeWindowPositionX - 2, closeWindowPositionY + 4, closeWindowTextSize + 5, 20, MAROON);
+		DrawText("x", closeWindowPositionX, closeWindowPositionY, 25, WHITE);
+
+		Vector2 mousePos = GetMousePosition();
+
+		if (mousePos.x > closeWindowPositionX &&
+			mousePos.x < closeWindowPositionX + closeWindowTextSize &&
+			mousePos.y > closeWindowPositionY &&
+			mousePos.y < closeWindowPositionY + 25)
+		{
+			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			{
+				closeBag();
+				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+			}
+		}
+		else
+		{
+			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+		}
+
+		for (int i = 0; i < bagRow; i++)
+		{
+			for (int j = 0; j < bagColumn; j++)
+			{
+				int headerOffset = 30;
+				DrawRectangle(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), inventoryWidth / bagRow - 1, (inventoryHeight - headerOffset) / bagColumn - 1, BLACK);
+
+				if (!inventory.getItems().empty() && inventory.getItems().size() > j + i * bagRow)
+				{
+					DrawTexture(inventory.getItems()[j + i * bagRow].texture, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), WHITE);
+					DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), 20, WHITE);
+				}
+			}
+		}
+	}
+	else
+	{
+		float bagPosX = GetScreenWidth() - bagTexture.width * 0.02f - 5.f;
+		float bagPosY = GetScreenHeight() - bagTexture.height * 0.02f - 5.f;
+		DrawTextureEx(bagTexture, { bagPosX, bagPosY }, 0.f, 0.02f, WHITE);
+		Vector2 mousePos = GetMousePosition();
+		if (mousePos.x > bagPosX && mousePos.x < bagPosX + bagTexture.width * 0.02f - 5.f
+			&& mousePos.y > bagPosY && mousePos.y < bagPosY + bagTexture.height * 0.02f - 5.f)
+		{
+			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			{
+				openBag();
+				if (isBagOpen)
+				{
+					SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+				}
+			}
+		}
+		else
+		{
+			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+		}
+	}
+}
+
+void Logic::handleOpenCloseBag()
+{
+	if (IsKeyPressed(KEY_I))
+	{
+		if (isBagOpen)
+		{
+			closeBag();
+		}
+		else
+		{
+			openBag();
+		}
+	}
+}
+
+void Logic::handleInventoryIsFull()
+{
+	if (inventory.canAddItems == false)
+	{
+		PlaySound(inventoryFull);
+		inventory.canAddItems = true;
+	}
+}
+
+void Logic::playerMovementAndCollisions(float deltaTime)
+{
 	for (int i = 0; i < gameEntities.size(); i++)
 	{
 		if (gameEntities[i].getComponent<TagComponent>().tag == "player" && gameEntities[i].hasComponent<PositionComponent>() && gameEntities[i].hasComponent<Sprite2DComponent>())
@@ -340,125 +473,27 @@ void Logic::Update()
 			}
 		}
 	}
+}
 
-	if (isQuestAccepted)
+void Logic::getPlayerFramesXY()
+{
+	for (auto& entities : gameEntities)
 	{
-		for (auto& items : inventory.getItems())
+		if (entities.hasComponent<Sprite2DComponent>() && entities.getComponent<TagComponent>().tag == "player")
 		{
-			if (items.id == "woodStash")
-			{
-				if (items.quantity < 10)
-				{
-					std::string questText = "[?] Collect 10 wood sticks";
-					questTextSize = MeasureText(questText.c_str(), 20);
-					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
-				}
-				else
-				{
-					std::string questText = "[=] Collect 10 wood sticks";
-					questTextSize = MeasureText(questText.c_str(), 20);
-					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
-				}
-
-				int questDescriptionSize = MeasureText("Wood sticks:", 20);
-				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
-				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
-				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
-				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
-			}
+			playerFramesX = entities.getComponent<Sprite2DComponent>().framesX;
+			playerFramesY = entities.getComponent<Sprite2DComponent>().framesY;
 		}
 	}
+}
 
-	if (IsKeyPressed(KEY_I))
-	{
-		if (isBagOpen)
-		{
-			closeBag();
-		}
-		else
-		{
-			openBag();
-		}
-	}
-
-	if (isBagOpen)
-	{
-		int inventoryWidth = 210;
-		int inventoryHeight = 210;
-		int inventoryPositionX = GetScreenWidth() - inventoryWidth - 5;
-		int inventoryPositionY = GetScreenHeight() - inventoryHeight - 5;
-		DrawRectangle(inventoryPositionX, inventoryPositionY, inventoryWidth, inventoryHeight, GRAY);
-		DrawText("INVENTORY [i]", inventoryPositionX + 2, inventoryPositionY + 2, 25, BLACK);
-		int closeWindowPositionX = inventoryPositionX + inventoryWidth - 20;
-		int closeWindowPositionY = inventoryPositionY;
-		int closeWindowTextSize = MeasureText("x", 25);
-		DrawRectangle(closeWindowPositionX - 2, closeWindowPositionY + 4, closeWindowTextSize + 5, 20, MAROON);
-		DrawText("x", closeWindowPositionX, closeWindowPositionY, 25, WHITE);
-
-		Vector2 mousePos = GetMousePosition();
-
-		if (mousePos.x > closeWindowPositionX &&
-			mousePos.x < closeWindowPositionX + closeWindowTextSize &&
-			mousePos.y > closeWindowPositionY &&
-			mousePos.y < closeWindowPositionY + 25)
-		{
-			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-			{
-				closeBag();
-				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-			}
-		}
-		else
-		{
-			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-		}
-
-		for (int i = 0; i < bagRow; i++)
-		{
-			for (int j = 0; j < bagColumn; j++)
-			{
-				int headerOffset = 30;
-				DrawRectangle(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), inventoryWidth / bagRow - 1, (inventoryHeight - headerOffset) / bagColumn - 1, BLACK);
-
-				if (!inventory.getItems().empty() && inventory.getItems().size() > j + i * bagRow)
-				{
-					DrawTexture(inventory.getItems()[j + i * bagRow].texture, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), WHITE);
-					DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), 20, WHITE);
-				}
-			}
-		}
-	}
-	else
-	{
-		float bagPosX = GetScreenWidth() - bagTexture.width * 0.02f - 5.f;
-		float bagPosY = GetScreenHeight() - bagTexture.height * 0.02f - 5.f;
-		DrawTextureEx(bagTexture, { bagPosX, bagPosY }, 0.f, 0.02f, WHITE);
-		Vector2 mousePos = GetMousePosition();
-		if (mousePos.x > bagPosX && mousePos.x < bagPosX + bagTexture.width * 0.02f - 5.f
-			&& mousePos.y > bagPosY && mousePos.y < bagPosY + bagTexture.height * 0.02f - 5.f)
-		{
-			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-			{
-				openBag();
-				if (isBagOpen)
-				{
-					SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-				}
-			}
-		}
-		else
-		{
-			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-		}
-	}
-
-	if (inventory.canAddItems == false)
-	{
-		PlaySound(inventoryFull);
-		inventory.canAddItems = true;
-	}
+void Logic::Update()
+{
+	UpdateMusicStream(themeSong);
+	float deltaTime = GetFrameTime();
+	playerMovementAndCollisions(deltaTime);
+	showQuest();
+	handleOpenCloseBag();
+	bagUI();
+	handleInventoryIsFull();
 }
