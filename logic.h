@@ -33,13 +33,15 @@ private:
 	void playerMovementAndCollisions(float deltaTime);
 	void getPlayerFramesXY();
 	Texture playerTexture;
-	Texture mapTexture;
 	Texture vendorTexture;
 	Texture woodStashTexture;
 	Texture bagTexture;
 	Texture goldCurrencyTexture;
 	Texture fishTexture;
 	Texture barrelTexture;
+	Texture dirtTexture;
+	Texture waterTexture;
+	Texture grassTexture;
 	std::vector<Entity> gameEntities;
 	std::vector<Texture> gameTextures;
 	std::vector<Sound> gameSounds;
@@ -59,4 +61,5 @@ private:
 	int goldCurrency = 0;
 	int playerFramesX = 0;
 	int playerFramesY = 0;
+	int level = 0;
 };

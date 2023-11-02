@@ -5,6 +5,7 @@
 #include "dialogue.h"
 #include "raymath.h"
 #include "inventory.h"
+#include "map.h"
 
 static const int bagRow = 4;
 static const int bagColumn = 4;
@@ -18,6 +19,7 @@ int bag[bagRow][bagColumn]
 Scene scene;
 DialogueTree dialogue;
 Inventory inventory;
+Map map;
 
 Logic::Logic()
 {
@@ -97,13 +99,15 @@ void Logic::initializeTexture(Texture& texture, const char* filePath)
 void Logic::initializeAllTexture()
 {
 	initializeTexture(playerTexture, "./Assets/playerSprite.png");
-	initializeTexture(mapTexture, "./Map/WorldMap.png");
 	initializeTexture(vendorTexture, "./Assets/adventurer_idle.png");
 	initializeTexture(woodStashTexture, "./Assets/wood_stash.png");
 	initializeTexture(bagTexture, "./Assets/bag.png");
 	initializeTexture(goldCurrencyTexture, "./Assets/goldCurrency.png");
 	initializeTexture(fishTexture, "./Assets/fish.png");
 	initializeTexture(barrelTexture, "./Assets/barrel.png");
+	initializeTexture(dirtTexture, "./Map/dirt.png");
+	initializeTexture(waterTexture, "./Map/water.png");
+	initializeTexture(grassTexture, "./Map/grass.png");
 }
 
 void Logic::initializeSound(Sound& sound, const char* filePath)
@@ -172,7 +176,14 @@ void Logic::playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multipl
 
 void Logic::Render()
 {
-	DrawTextureEx(mapTexture, { 0.f, 0.f }, 0.f, 1.f, WHITE);
+	if (level == 0)
+	{
+		map.drawMap(dirtTexture, waterTexture, grassTexture);
+	}
+	else
+	{
+		map.drawMap(grassTexture, dirtTexture, grassTexture);
+	}
 	drawObject();
 	DrawText(TextFormat("%i", goldCurrency), 10, 10, 20, BLACK);
 	DrawTextureEx(goldCurrencyTexture, { 20.f, 7.f }, 0.f, 1.5f, WHITE);
@@ -496,4 +507,13 @@ void Logic::Update()
 	handleOpenCloseBag();
 	bagUI();
 	handleInventoryIsFull();
+
+	if (IsKeyPressed(KEY_P))
+	{
+		level = 1;
+	}
+	if (IsKeyPressed(KEY_O))
+	{
+		level = 0;
+	}
 }
