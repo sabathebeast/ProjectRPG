@@ -6,6 +6,7 @@
 
 class Scene;
 class Entity;
+class Item;
 
 class Logic
 {
