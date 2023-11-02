@@ -27,7 +27,7 @@ public:
 	template<typename T>
 	void removeComponent()
 	{
-		return scene->registry.remove<T>(entityHandle);
+		scene->registry.remove<T>(entityHandle);
 	}
 
 	template<typename T>
