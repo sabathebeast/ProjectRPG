@@ -15,6 +15,8 @@ public:
 	~Logic();
 	void Render();
 	void Update();
+	const int windowWidth = 1024;
+	const int windowHeight = 1024;
 private:
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
@@ -63,4 +65,6 @@ private:
 	int playerFramesX = 0;
 	int playerFramesY = 0;
 	int level = 0;
+	Vector2 playerDirection = { 0.f, 0.f };
+	float mapScrollingSpeed = 10.f;
 };

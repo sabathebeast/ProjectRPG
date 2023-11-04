@@ -70,22 +70,22 @@ void Logic::createAllGameEntity()
 
 	for (int i = 0; i < 10; i++)
 	{
-		int RandomX = GetRandomValue(0 + woodStashTexture.width, GetScreenWidth() - woodStashTexture.width);
-		int RandomY = GetRandomValue(0 + woodStashTexture.height, GetScreenHeight() - woodStashTexture.height);
+		int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
+		int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
 		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
 	}
 
 	for (int i = 0; i < 10; i++)
 	{
-		int RandomX = GetRandomValue(0 + fishTexture.width, GetScreenWidth() - fishTexture.width);
-		int RandomY = GetRandomValue(0 + fishTexture.height, GetScreenHeight() - fishTexture.height);
+		int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
+		int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
 		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
 	}
 
 	for (int i = 0; i < 10; i++)
 	{
-		int RandomX = GetRandomValue(0 + barrelTexture.width, GetScreenWidth() - barrelTexture.width);
-		int RandomY = GetRandomValue(0 + barrelTexture.height, GetScreenHeight() - barrelTexture.height);
+		int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
+		int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
 		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
 	}
 }
@@ -137,7 +137,26 @@ void Logic::drawObject()
 	{
 		if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>())
 		{
-			DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x), static_cast<int>(entities.getComponent<PositionComponent>().y), WHITE);
+			float xScrollingOffset = 0.f;
+			float yScrollingOffset = 0.f;
+
+			if (playerDirection.x >= 0.f)
+			{
+				xScrollingOffset = playerDirection.x * map.mapTileSize;
+			}
+			else
+			{
+				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+			}
+			if (playerDirection.y >= 0.f)
+			{
+				yScrollingOffset = playerDirection.y * map.mapTileSize;
+			}
+			else
+			{
+				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+			}
+			DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x + xScrollingOffset), static_cast<int>(entities.getComponent<PositionComponent>().y + yScrollingOffset), WHITE);
 		}
 		else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>())
 		{
@@ -178,11 +197,11 @@ void Logic::Render()
 {
 	if (level == 0)
 	{
-		map.drawMap(dirtTexture, waterTexture, grassTexture);
+		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection);
 	}
 	else
 	{
-		map.drawMap(grassTexture, dirtTexture, grassTexture);
+		map.drawMap(grassTexture, dirtTexture, grassTexture, playerDirection);
 	}
 	drawObject();
 	DrawText(TextFormat("%i", goldCurrency), 10, 10, 20, BLACK);
@@ -289,7 +308,6 @@ void Logic::bagUI()
 						int itemText = MeasureText(inventory.getItems()[j + i * bagRow].id, 20);
 						DrawRectangle(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) - itemText - 2, inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1) - 20, itemText + 4, 20, WHITE);
 						DrawText(inventory.getItems()[j + i * bagRow].id, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) - itemText, inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1) - 20, 20, BLACK);
-						//DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) - 100, inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1) - 60 + 20, 20, BLACK);
 					}
 				}
 			}
@@ -349,27 +367,102 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 {
 	for (int i = 0; i < gameEntities.size(); i++)
 	{
+		float xScrollingOffset = 0.f;
+		float yScrollingOffset = 0.f;
+
+		if (playerDirection.x >= 0.f)
+		{
+			xScrollingOffset = playerDirection.x * map.mapTileSize;
+		}
+		else
+		{
+			xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+		}
+		if (playerDirection.y >= 0.f)
+		{
+			yScrollingOffset = playerDirection.y * map.mapTileSize;
+		}
+		else
+		{
+			yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+		}
+
 		if (gameEntities[i].getComponent<TagComponent>().tag == "player" && gameEntities[i].hasComponent<PositionComponent>() && gameEntities[i].hasComponent<Sprite2DComponent>())
 		{
 			if (IsKeyDown(KEY_W))
 			{
-				gameEntities[i].getComponent<PositionComponent>().y -= playerSpeed * deltaTime;
 				playPlayerAnimation(gameEntities, 3, i);
+				if (gameEntities[i].getComponent<PositionComponent>().y - GetScreenHeight() / 2 - (playerDirection.y) >= 0.f && gameEntities[i].getComponent<PositionComponent>().y <= GetScreenHeight() / 2)
+				{
+					playerDirection.y += mapScrollingSpeed * deltaTime;
+				}
+				else
+				{
+					if (gameEntities[i].getComponent<PositionComponent>().y <= GetScreenHeight() / 2)
+					{
+						playerDirection.y = 0.f;
+					}
+					gameEntities[i].getComponent<PositionComponent>().y -= playerSpeed * deltaTime;
+					if (gameEntities[i].getComponent<PositionComponent>().y - gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2 <= 0)
+					{
+						gameEntities[i].getComponent<PositionComponent>().y = 0.f + gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2;
+					}
+				}
 			}
 			if (IsKeyDown(KEY_S))
 			{
-				gameEntities[i].getComponent<PositionComponent>().y += playerSpeed * deltaTime;
 				playPlayerAnimation(gameEntities, 0, i);
+
+				if (gameEntities[i].getComponent<PositionComponent>().y + GetScreenHeight() / 2 + (playerDirection.y * -1) + 90 <= map.mapHeight && gameEntities[i].getComponent<PositionComponent>().y >= GetScreenHeight() / 2)
+				{
+					playerDirection.y -= mapScrollingSpeed * deltaTime;
+				}
+				else
+				{
+					gameEntities[i].getComponent<PositionComponent>().y += playerSpeed * deltaTime;
+					if (gameEntities[i].getComponent<PositionComponent>().y + gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2 > windowHeight)
+					{
+						gameEntities[i].getComponent<PositionComponent>().y = windowHeight - gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2;
+					}
+				}
 			}
 			if (IsKeyDown(KEY_A))
 			{
-				gameEntities[i].getComponent<PositionComponent>().x -= playerSpeed * deltaTime;
 				playPlayerAnimation(gameEntities, 1, i);
+
+				if (gameEntities[i].getComponent<PositionComponent>().x - GetScreenWidth() / 2 - playerDirection.x >= 0.f && gameEntities[i].getComponent<PositionComponent>().x <= GetScreenWidth() / 2)
+				{
+					playerDirection.x += mapScrollingSpeed * deltaTime;
+				}
+				else
+				{
+					if (gameEntities[i].getComponent<PositionComponent>().x <= GetScreenWidth() / 2)
+					{
+						playerDirection.x = 0.f;
+					}
+					gameEntities[i].getComponent<PositionComponent>().x -= playerSpeed * deltaTime;
+					if (gameEntities[i].getComponent<PositionComponent>().x - gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2 <= 0.f)
+					{
+						gameEntities[i].getComponent<PositionComponent>().x = 0.f + gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2;
+					}
+				}
 			}
 			if (IsKeyDown(KEY_D))
 			{
-				gameEntities[i].getComponent<PositionComponent>().x += playerSpeed * deltaTime;
 				playPlayerAnimation(gameEntities, 2, i);
+
+				if (gameEntities[i].getComponent<PositionComponent>().x + GetScreenWidth() / 2 + (playerDirection.x * -1) + 90 <= map.mapWidth && gameEntities[i].getComponent<PositionComponent>().x >= GetScreenWidth() / 2)
+				{
+					playerDirection.x -= mapScrollingSpeed * deltaTime;
+				}
+				else
+				{
+					gameEntities[i].getComponent<PositionComponent>().x += playerSpeed * deltaTime;
+					if (gameEntities[i].getComponent<PositionComponent>().x + gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2 >= windowWidth)
+					{
+						gameEntities[i].getComponent<PositionComponent>().x = windowWidth - gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2;
+					}
+				}
 			}
 			playerLocation = { gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y };
 		}
@@ -377,13 +470,12 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
 			&& questReturnValue < 6
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x,
-									gameEntities[i].getComponent<PositionComponent>().y,
+			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
+									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
 				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
 		{
-
 			if (questReturnValue == 1)
 			{
 				PlaySound(questDoneSound);
@@ -425,8 +517,8 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "woodStash"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x,
-									gameEntities[i].getComponent<PositionComponent>().y,
+			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
+									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
 				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
@@ -450,8 +542,8 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "fish"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x,
-									gameEntities[i].getComponent<PositionComponent>().y,
+			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
+									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
 				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
@@ -474,8 +566,8 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "barrel"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x,
-									gameEntities[i].getComponent<PositionComponent>().y,
+			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
+									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
 				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
