@@ -4,6 +4,13 @@
 #include <vector>
 #include <memory>
 
+enum class Level : unsigned char
+{
+	level_0,
+	level_1,
+	level_2,
+};
+
 class Scene;
 class Entity;
 class Item;
@@ -45,6 +52,7 @@ private:
 	Texture dirtTexture;
 	Texture waterTexture;
 	Texture grassTexture;
+	Texture houseTexture;
 	std::vector<Entity> gameEntities;
 	std::vector<Texture> gameTextures;
 	std::vector<Sound> gameSounds;
@@ -60,11 +68,12 @@ private:
 	Music themeSong;
 	int questReturnValue = 0;
 	bool isQuestAccepted = false;
+	bool isQuestFullfilled = false;
 	int questTextSize = 0;
 	int goldCurrency = 0;
 	int playerFramesX = 0;
 	int playerFramesY = 0;
-	int level = 0;
 	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
+	Level level;
 };

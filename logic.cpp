@@ -67,6 +67,7 @@ void Logic::createAllGameEntity()
 {
 	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
 	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
+	createBasicGameEntity(scene, windowWidth - 100, 50, houseTexture, "house");
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -108,6 +109,7 @@ void Logic::initializeAllTexture()
 	initializeTexture(dirtTexture, "./Map/dirt.png");
 	initializeTexture(waterTexture, "./Map/water.png");
 	initializeTexture(grassTexture, "./Map/grass.png");
+	initializeTexture(houseTexture, "./Assets/house.png");
 }
 
 void Logic::initializeSound(Sound& sound, const char* filePath)
@@ -135,7 +137,7 @@ void Logic::drawObject()
 {
 	for (auto& entities : gameEntities)
 	{
-		if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>())
+		if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
 		{
 			float xScrollingOffset = 0.f;
 			float yScrollingOffset = 0.f;
@@ -158,7 +160,7 @@ void Logic::drawObject()
 			}
 			DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x + xScrollingOffset), static_cast<int>(entities.getComponent<PositionComponent>().y + yScrollingOffset), WHITE);
 		}
-		else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>())
+		else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
 		{
 			DrawTexturePro(entities.getComponent<Sprite2DComponent>().texture,
 				Rectangle{ entities.getComponent<Sprite2DComponent>().sourceX,
@@ -195,17 +197,59 @@ void Logic::playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multipl
 
 void Logic::Render()
 {
-	if (level == 0)
+	if (level == Level::level_0)
 	{
 		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection);
 	}
 	else
 	{
-		map.drawMap(grassTexture, dirtTexture, grassTexture, playerDirection);
+		map.drawMap(grassTexture, waterTexture, dirtTexture, playerDirection);
+		for (auto& entities : gameEntities)
+		{
+			if (entities.getComponent<TagComponent>().tag == "house")
+			{
+				float xScrollingOffset = 0.f;
+				float yScrollingOffset = 0.f;
+
+				if (playerDirection.x >= 0.f)
+				{
+					xScrollingOffset = playerDirection.x * map.mapTileSize;
+				}
+				else
+				{
+					xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+				}
+				if (playerDirection.y >= 0.f)
+				{
+					yScrollingOffset = playerDirection.y * map.mapTileSize;
+				}
+				else
+				{
+					yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+				}
+
+				entities.getComponent<PositionComponent>().x = 50;
+				entities.getComponent<PositionComponent>().y = windowHeight - 100;
+				entities.isActive = true;
+
+				if (entities.hasComponent<PositionComponent>()
+					&& entities.hasComponent<TextureComponent>()
+					&& entities.isActive
+					&& CheckCollisionRecs({ entities.getComponent<PositionComponent>().x + xScrollingOffset,
+											entities.getComponent<PositionComponent>().y + yScrollingOffset,
+						static_cast<float>(entities.getComponent<TextureComponent>().texture.width),
+						static_cast<float>(entities.getComponent<TextureComponent>().texture.height) },
+						{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+				{
+					level = Level::level_0;
+					entities.isActive = false;
+					entities.getComponent<PositionComponent>().x = windowWidth - 100;
+					entities.getComponent<PositionComponent>().y = 50;
+				}
+			}
+		}
 	}
 	drawObject();
-	DrawText(TextFormat("%i", goldCurrency), 10, 10, 20, BLACK);
-	DrawTextureEx(goldCurrencyTexture, { 20.f, 7.f }, 0.f, 1.5f, WHITE);
 }
 
 void Logic::closeBag()
@@ -224,19 +268,21 @@ void Logic::showQuest()
 {
 	if (isQuestAccepted)
 	{
+		if (isQuestFullfilled == false)
+		{
+			std::string questText = "[?] Collect 10 wood sticks";
+			questTextSize = MeasureText(questText.c_str(), 20);
+			DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+			DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
+		}
+
 		for (auto& items : inventory.getItems())
 		{
 			if (items.id == "woodStash")
 			{
-				if (items.quantity < 10)
+				if (items.quantity >= 10)
 				{
-					std::string questText = "[?] Collect 10 wood sticks";
-					questTextSize = MeasureText(questText.c_str(), 20);
-					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
-				}
-				else
-				{
+					isQuestFullfilled = true;
 					std::string questText = "[=] Collect 10 wood sticks";
 					questTextSize = MeasureText(questText.c_str(), 20);
 					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
@@ -260,8 +306,14 @@ void Logic::bagUI()
 		int inventoryWidth = 210;
 		int inventoryHeight = 210;
 		int inventoryPositionX = GetScreenWidth() - inventoryWidth - 5;
-		int inventoryPositionY = GetScreenHeight() - inventoryHeight - 5;
+		int inventoryPositionY = GetScreenHeight() - inventoryHeight - 35;
+
 		DrawRectangle(inventoryPositionX, inventoryPositionY, inventoryWidth, inventoryHeight, GRAY);
+		DrawRectangle(inventoryPositionX + 1, inventoryPositionY + inventoryHeight, inventoryWidth - 1, 30, GRAY);
+		DrawText(TextFormat("%i", inventory.getGoldCount()), inventoryPositionX + 5, inventoryPositionY + inventoryHeight + 5, 20, BLACK);
+		int goldTextSize = MeasureText(TextFormat("%i", inventory.getGoldCount()), 20);
+		DrawTextureEx(goldCurrencyTexture, { inventoryPositionX + 5.f + goldTextSize, inventoryPositionY + inventoryHeight + 2.f }, 0.f, 1.5f, WHITE);
+
 		DrawText("INVENTORY [i]", inventoryPositionX + 2, inventoryPositionY + 2, 25, BLACK);
 		int closeWindowPositionX = inventoryPositionX + inventoryWidth - 20;
 		int closeWindowPositionY = inventoryPositionY;
@@ -413,7 +465,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			{
 				playPlayerAnimation(gameEntities, 0, i);
 
-				if (gameEntities[i].getComponent<PositionComponent>().y + GetScreenHeight() / 2 + (playerDirection.y * -1) + 90 <= map.mapHeight && gameEntities[i].getComponent<PositionComponent>().y >= GetScreenHeight() / 2)
+				if (gameEntities[i].getComponent<PositionComponent>().y + GetScreenHeight() / 2 + (playerDirection.y * -1) <= map.mapHeight - 90 && gameEntities[i].getComponent<PositionComponent>().y >= GetScreenHeight() / 2)
 				{
 					playerDirection.y -= mapScrollingSpeed * deltaTime;
 				}
@@ -451,7 +503,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			{
 				playPlayerAnimation(gameEntities, 2, i);
 
-				if (gameEntities[i].getComponent<PositionComponent>().x + GetScreenWidth() / 2 + (playerDirection.x * -1) + 90 <= map.mapWidth && gameEntities[i].getComponent<PositionComponent>().x >= GetScreenWidth() / 2)
+				if (gameEntities[i].getComponent<PositionComponent>().x + GetScreenWidth() / 2 + (playerDirection.x * -1) <= map.mapWidth - 90 && gameEntities[i].getComponent<PositionComponent>().x >= GetScreenWidth() / 2)
 				{
 					playerDirection.x -= mapScrollingSpeed * deltaTime;
 				}
@@ -469,6 +521,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "vendor"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
+			&& gameEntities[i].isActive
 			&& questReturnValue < 6
 			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
 									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
@@ -479,7 +532,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			if (questReturnValue == 1)
 			{
 				PlaySound(questDoneSound);
-				goldCurrency += 5;
+				inventory.addGold(5);
 				questReturnValue = 6;
 				isQuestAccepted = false;
 				inventory.removeOrDecreaseItems("woodStash", 10);
@@ -517,6 +570,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "woodStash"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
+			&& gameEntities[i].isActive
 			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
 									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
@@ -542,6 +596,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "fish"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
+			&& gameEntities[i].isActive
 			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
 									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
@@ -566,6 +621,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 		else if (gameEntities[i].getComponent<TagComponent>().tag == "barrel"
 			&& gameEntities[i].hasComponent<PositionComponent>()
 			&& gameEntities[i].hasComponent<TextureComponent>()
+			&& gameEntities[i].isActive
 			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
 									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
 				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
@@ -585,6 +641,19 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			{
 				gameEntities.erase(gameEntities.begin() + i);
 			}
+		}
+		else if (gameEntities[i].getComponent<TagComponent>().tag == "house"
+			&& gameEntities[i].hasComponent<PositionComponent>()
+			&& gameEntities[i].hasComponent<TextureComponent>()
+			&& gameEntities[i].isActive
+			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
+									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
+				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
+				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
+				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+		{
+			gameEntities[i].isActive = false;
+			level = Level::level_1;
 		}
 	}
 }
@@ -610,13 +679,52 @@ void Logic::Update()
 	handleOpenCloseBag();
 	bagUI();
 	handleInventoryIsFull();
-
-	if (IsKeyPressed(KEY_P))
+	if (level == Level::level_0)
 	{
-		level = 1;
+		for (auto& entities : gameEntities)
+		{
+			if (entities.getComponent<TagComponent>().tag == "barrel")
+			{
+				entities.isActive = false;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "woodStash")
+			{
+				entities.isActive = false;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "fish")
+			{
+				entities.isActive = false;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "house")
+			{
+				entities.isActive = true;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "vendor")
+			{
+				entities.isActive = true;
+			}
+		}
 	}
-	if (IsKeyPressed(KEY_O))
+	else if (level == Level::level_1)
 	{
-		level = 0;
+		for (auto& entities : gameEntities)
+		{
+			if (entities.getComponent<TagComponent>().tag == "barrel")
+			{
+				entities.isActive = true;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "woodStash")
+			{
+				entities.isActive = true;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "fish")
+			{
+				entities.isActive = true;
+			}
+			else if (entities.getComponent<TagComponent>().tag == "vendor")
+			{
+				entities.isActive = false;
+			}
+		}
 	}
 }
