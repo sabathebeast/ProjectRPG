@@ -42,6 +42,7 @@ private:
 	void handleInventoryIsFull();
 	void playerMovementAndCollisions(float deltaTime);
 	void getPlayerFramesXY();
+	void handleLevels();
 	Texture playerTexture;
 	Texture vendorTexture;
 	Texture woodStashTexture;
@@ -75,5 +76,5 @@ private:
 	int playerFramesY = 0;
 	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
-	Level level;
+	Level level = Level::level_0;
 };

@@ -197,6 +197,7 @@ void Logic::playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multipl
 
 void Logic::Render()
 {
+	handleLevels();
 	if (level == Level::level_0)
 	{
 		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection);
@@ -670,15 +671,8 @@ void Logic::getPlayerFramesXY()
 	}
 }
 
-void Logic::Update()
+void Logic::handleLevels()
 {
-	UpdateMusicStream(themeSong);
-	float deltaTime = GetFrameTime();
-	playerMovementAndCollisions(deltaTime);
-	showQuest();
-	handleOpenCloseBag();
-	bagUI();
-	handleInventoryIsFull();
 	if (level == Level::level_0)
 	{
 		for (auto& entities : gameEntities)
@@ -727,4 +721,15 @@ void Logic::Update()
 			}
 		}
 	}
+}
+
+void Logic::Update()
+{
+	UpdateMusicStream(themeSong);
+	float deltaTime = GetFrameTime();
+	playerMovementAndCollisions(deltaTime);
+	showQuest();
+	handleOpenCloseBag();
+	bagUI();
+	handleInventoryIsFull();
 }
