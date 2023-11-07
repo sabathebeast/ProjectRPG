@@ -50,3 +50,8 @@ void Inventory::removeOrDecreaseItems(const char* rmvid, int rmvquantity)
 		}
 	}
 }
+
+void Inventory::addGold(int amount)
+{
+	goldCount += amount;
+}

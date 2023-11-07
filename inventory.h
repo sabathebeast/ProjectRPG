@@ -25,9 +25,12 @@ public:
 	inline const std::vector<Item> getItems() const { return items; }
 	bool canAddItems = true;
 	void removeOrDecreaseItems(const char* rmvid, int rmvquantity);
+	void addGold(int amount);
+	inline const int getGoldCount() const { return goldCount; }
 private:
 	std::vector<Item> items;
 	int currentSize = 0;
 	int maxSize = 16;
 	void sortItems();
+	int goldCount = 0;
 };
