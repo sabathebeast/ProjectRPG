@@ -11,8 +11,8 @@ public:
 	Map();
 	~Map();
 
-	int mapWidth = tileRow * tileSize;
-	int mapHeight = tileColumn * tileSize;
+	int mapWidth = tileColumn * tileSize;
+	int mapHeight = tileRow * tileSize;
 	int mapTileSize = tileSize;
 
 	void loadMap(int arr[tileRow][tileColumn]);
