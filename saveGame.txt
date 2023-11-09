@@ -1,0 +1,2 @@
+goldCount int 1005
+goldCount string 1005

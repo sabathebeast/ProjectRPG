@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include <vector>
 #include <memory>
+#include <fstream>
 
 enum class Level : unsigned char
 {
@@ -22,8 +23,8 @@ public:
 	~Logic();
 	void Render();
 	void Update();
-	const int windowWidth = 1024;
-	const int windowHeight = 1024;
+	const int windowWidth = GetScreenWidth();
+	const int windowHeight = GetScreenHeight();
 private:
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
@@ -43,6 +44,8 @@ private:
 	void playerMovementAndCollisions(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
+	void saveGame();
+	void loadGame();
 	Texture playerTexture;
 	Texture vendorTexture;
 	Texture woodStashTexture;
@@ -77,4 +80,6 @@ private:
 	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
 	Level level = Level::level_0;
+	std::ofstream outputFile;
+	std::ifstream inputFile;
 };

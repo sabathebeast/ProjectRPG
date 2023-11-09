@@ -6,15 +6,10 @@
 #include "raymath.h"
 #include "inventory.h"
 #include "map.h"
+#include <string>
 
 static const int bagRow = 4;
 static const int bagColumn = 4;
-
-int bag[bagRow][bagColumn]
-{ 0,0,0,0,
-	0,0,0,0,
-	0,0,0,0,
-	0,0,0,0 };
 
 Scene scene;
 DialogueTree dialogue;
@@ -23,6 +18,7 @@ Map map;
 
 Logic::Logic()
 {
+	loadGame();
 	initializeAllTexture();
 	createAllGameEntity();
 	getPlayerFramesXY();
@@ -33,6 +29,8 @@ Logic::Logic()
 
 Logic::~Logic()
 {
+	saveGame();
+
 	for (auto& sound : gameSounds)
 	{
 		UnloadSound(sound);
@@ -721,6 +719,34 @@ void Logic::handleLevels()
 			}
 		}
 	}
+}
+
+void Logic::saveGame()
+{
+	outputFile.open("saveGame.txt");
+	if (outputFile.fail())
+	{
+	std:perror("saveGame.txt");
+	}
+	outputFile << "goldCount" << " " << "int" << " " << inventory.getGoldCount() << "\n";
+	outputFile << "goldCount" << " " << "string" << " " << inventory.getGoldCount() << "\n";
+	outputFile.close();
+}
+
+void Logic::loadGame()
+{
+	inputFile.open("saveGame.txt");
+	if (inputFile.fail())
+	{
+		std::perror("saveGame.txt");
+	}
+
+	std::string input;
+	inputFile >> input >> input >> input;
+
+	printf(input.c_str());
+
+	inventory.setGoldCount(std::stoi(input));
 }
 
 void Logic::Update()

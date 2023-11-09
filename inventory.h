@@ -27,6 +27,7 @@ public:
 	void removeOrDecreaseItems(const char* rmvid, int rmvquantity);
 	void addGold(int amount);
 	inline const int getGoldCount() const { return goldCount; }
+	inline int setGoldCount(int amount) { return goldCount = amount; }
 private:
 	std::vector<Item> items;
 	int currentSize = 0;
