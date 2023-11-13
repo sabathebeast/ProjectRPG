@@ -265,34 +265,50 @@ void Logic::openBag()
 
 void Logic::showQuest()
 {
-	if (isQuestAccepted)
+	if (questState == QuestState::None) return;
+
+	if (questState == QuestState::Accepted)
 	{
-		if (isQuestFullfilled == false)
-		{
-			std::string questText = "[?] Collect 10 wood sticks";
-			questTextSize = MeasureText(questText.c_str(), 20);
-			DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-			DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
-		}
+		std::string questText = "[?] Collect 10 wood sticks";
+		int questTextSize = MeasureText(questText.c_str(), 20);
+		DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+		DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
 
 		for (auto& items : inventory.getItems())
 		{
 			if (items.id == "woodStash")
 			{
+				int questDescriptionSize = MeasureText("Wood sticks:", 20);
+				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
+				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
+				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
+				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
+
 				if (items.quantity >= 10)
 				{
-					isQuestFullfilled = true;
-					std::string questText = "[=] Collect 10 wood sticks";
-					questTextSize = MeasureText(questText.c_str(), 20);
-					DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-					DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
+					questState = QuestState::Fullfilled;
 				}
+				break;
+			}
+		}
+	}
+	else if (questState == QuestState::Fullfilled)
+	{
+		for (auto& items : inventory.getItems())
+		{
+			if (items.id == "woodStash")
+			{
+				std::string questText = "[=] Collect 10 wood sticks";
+				int questTextSize = MeasureText(questText.c_str(), 20);
+				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+				DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
 
 				int questDescriptionSize = MeasureText("Wood sticks:", 20);
 				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
 				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
 				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
 				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
+				break;
 			}
 		}
 	}
@@ -533,13 +549,13 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				PlaySound(questDoneSound);
 				inventory.addGold(5);
 				questReturnValue = 6;
-				isQuestAccepted = false;
+				questState = QuestState::Done;
 				inventory.removeOrDecreaseItems("woodStash", 10);
 
 			}
 			else if (questReturnValue == 2)
 			{
-				isQuestAccepted = false;
+				questState = QuestState::None;
 				questReturnValue = 6;
 			}
 			else if (questReturnValue == 4)
@@ -558,7 +574,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			else if (questReturnValue == 5)
 			{
 				PlaySound(questAcceptedSound);
-				isQuestAccepted = true;
+				questState = QuestState::Accepted;
 				questReturnValue = 4;
 			}
 			else
@@ -729,7 +745,7 @@ void Logic::saveGame()
 	std:perror("saveGame.txt");
 	}
 	outputFile << "goldCount" << " " << "int" << " " << inventory.getGoldCount() << "\n";
-	outputFile << "goldCount" << " " << "string" << " " << inventory.getGoldCount() << "\n";
+	outputFile << "goldCount" << " " << "string" << " " << playerLocation.x << "\n";
 	outputFile.close();
 }
 

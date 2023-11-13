@@ -1,2 +1,2 @@
-goldCount int 1005
-goldCount string 1005
+goldCount int 1020
+goldCount string 512

@@ -12,6 +12,14 @@ enum class Level : unsigned char
 	level_2,
 };
 
+enum class QuestState : unsigned char
+{
+	None,
+	Accepted,
+	Fullfilled,
+	Done
+};
+
 class Scene;
 class Entity;
 class Item;
@@ -71,15 +79,13 @@ private:
 	bool isBagOpen = false;
 	Music themeSong;
 	int questReturnValue = 0;
-	bool isQuestAccepted = false;
-	bool isQuestFullfilled = false;
-	int questTextSize = 0;
 	int goldCurrency = 0;
 	int playerFramesX = 0;
 	int playerFramesY = 0;
 	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
 	Level level = Level::level_0;
+	QuestState questState = QuestState::None;
 	std::ofstream outputFile;
 	std::ifstream inputFile;
 };
