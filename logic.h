@@ -88,4 +88,11 @@ private:
 	QuestState questState = QuestState::None;
 	std::ofstream outputFile;
 	std::ifstream inputFile;
+	std::vector<std::string> inputData;
+
+	template <typename T>
+	void addToSaveGame(const char* name, T arg)
+	{
+		outputFile << name << " " << ":" << " " << arg << "\n";
+	}
 };

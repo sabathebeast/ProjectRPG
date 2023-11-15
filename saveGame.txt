@@ -1,2 +1,6 @@
-goldCount int 1020
-goldCount string 512
+goldCount : 1101
+playerLocationX : 530.959
+playerLocationY : 63.9207
+questReturnValue : 6
+playerDirectionX : -5.78713
+playerDirectionY : 0

@@ -18,13 +18,13 @@ Map map;
 
 Logic::Logic()
 {
-	loadGame();
 	initializeAllTexture();
 	createAllGameEntity();
 	getPlayerFramesXY();
 	playerSpeed = 200.f;
 	dialogue.init();
 	initializeAllSound();
+	loadGame();
 }
 
 Logic::~Logic()
@@ -744,8 +744,13 @@ void Logic::saveGame()
 	{
 	std:perror("saveGame.txt");
 	}
-	outputFile << "goldCount" << " " << "int" << " " << inventory.getGoldCount() << "\n";
-	outputFile << "goldCount" << " " << "string" << " " << playerLocation.x << "\n";
+	addToSaveGame("goldCount", inventory.getGoldCount());
+	addToSaveGame("playerLocationX", playerLocation.x);
+	addToSaveGame("playerLocationY", playerLocation.y);
+	addToSaveGame("questReturnValue", questReturnValue);
+	addToSaveGame("playerDirectionX", playerDirection.x);
+	addToSaveGame("playerDirectionY", playerDirection.y);
+
 	outputFile.close();
 }
 
@@ -758,11 +763,64 @@ void Logic::loadGame()
 	}
 
 	std::string input;
-	inputFile >> input >> input >> input;
 
-	printf(input.c_str());
+	while (inputFile >> input)
+	{
+		inputData.push_back(input);
+	}
 
-	inventory.setGoldCount(std::stoi(input));
+	for (int i = 0; i < inputData.size(); i += 3)
+	{
+		if (inputData[i] == "goldCount")
+		{
+			inventory.setGoldCount(std::stoi(inputData[i + 2]));
+			continue;
+		}
+		if (inputData[i] == "playerLocationX")
+		{
+			for (auto& entities : gameEntities)
+			{
+				if (entities.getComponent<TagComponent>().tag == "player")
+				{
+					entities.getComponent<PositionComponent>().x = std::stof(inputData[i + 2]);
+					break;
+				}
+			}
+			playerLocation.x = std::stof(inputData[i + 2]);
+			continue;
+		}
+		if (inputData[i] == "playerLocationY")
+		{
+			for (auto& entities : gameEntities)
+			{
+				if (entities.getComponent<TagComponent>().tag == "player")
+				{
+					entities.getComponent<PositionComponent>().y = std::stof(inputData[i + 2]);
+					break;
+				}
+			}
+			playerLocation.y = std::stof(inputData[i + 2]);
+			continue;
+		}
+		if (inputData[i] == "questReturnValue")
+		{
+			questReturnValue = std::stoi(inputData[i + 2]);
+			continue;
+		}
+		if (inputData[i] == "playerDirectionX")
+		{
+			playerDirection.x = std::stof(inputData[i + 2]);
+			continue;
+		}
+
+		if (inputData[i] == "playerDirectionY")
+		{
+			playerDirection.y = std::stof(inputData[i + 2]);
+			continue;
+		}
+	}
+
+	inputFile.close();
 }
 
 void Logic::Update()
