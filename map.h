@@ -11,9 +11,9 @@ public:
 	Map();
 	~Map();
 
-	int mapWidth = tileColumn * tileSize;
-	int mapHeight = tileRow * tileSize;
-	int mapTileSize = tileSize;
+	const int mapWidth = tileColumn * tileSize;
+	const int mapHeight = tileRow * tileSize;
+	const int mapTileSize = tileSize;
 
 	void loadMap(int arr[tileRow][tileColumn]);
 	void drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction);
