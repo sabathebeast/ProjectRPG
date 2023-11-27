@@ -47,6 +47,7 @@ private:
 	void openBag();
 	void showQuest();
 	void bagUI();
+	void toolBarUI();
 	void handleOpenCloseBag();
 	void handleInventoryIsFull();
 	void playerMovementAndCollisions(float deltaTime);

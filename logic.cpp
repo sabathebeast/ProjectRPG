@@ -406,6 +406,30 @@ void Logic::bagUI()
 	}
 }
 
+void Logic::toolBarUI()
+{
+	int toolBarWidth = windowWidth / 2;
+	int toolBarHeight = windowHeight / 20;
+	int toolBarPosX = (windowWidth - toolBarWidth) / 2;
+	int toolBarPosY = windowHeight - toolBarHeight - 5;
+
+	if (playerLocation.y + (playerTexture.height / playerFramesY) / 2 >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
+	{
+		toolBarPosY = 5;
+	}
+
+	DrawRectangle(toolBarPosX, toolBarPosY, toolBarWidth, toolBarHeight, Color{ 188, 188, 188, 200 });
+
+	for (int i = 0; i < 10; i++)
+	{
+		int toolWidth = (toolBarWidth - 10 * 2) / 10;
+		int toolHeight = toolBarHeight - 4;
+
+		DrawRectangle(toolBarPosX + 2 + (i * (toolWidth + 2)), toolBarPosY + 2, toolWidth, toolHeight, Color{ 45,45,45,225 });
+		DrawText(TextFormat("%i", i + 1), toolBarPosX + 3 + (i * (toolWidth + 2)), toolBarPosY + 2, 15, WHITE);
+	}
+}
+
 void Logic::handleOpenCloseBag()
 {
 	if (IsKeyPressed(KEY_I))
@@ -831,5 +855,6 @@ void Logic::Update()
 	showQuest();
 	handleOpenCloseBag();
 	bagUI();
+	toolBarUI();
 	handleInventoryIsFull();
 }
