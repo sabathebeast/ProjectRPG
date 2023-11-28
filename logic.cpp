@@ -411,23 +411,36 @@ void Logic::toolBarUI()
 	int toolBarWidth = windowWidth / 2;
 	int toolBarHeight = windowHeight / 20;
 	int toolBarPosX = (windowWidth - toolBarWidth) / 2;
-	int toolBarPosY = windowHeight - toolBarHeight - 5;
+	int toolBarPosY = windowHeight - toolBarHeight - 20;
+	int toolWidth = (toolBarWidth - 10 * 2) / 10;
+	int toolHeight = toolBarHeight - 4;
 
 	if (playerLocation.y + (playerTexture.height / playerFramesY) / 2 >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
 	{
 		toolBarPosY = 5;
 	}
 
-	DrawRectangle(toolBarPosX, toolBarPosY, toolBarWidth, toolBarHeight, Color{ 188, 188, 188, 200 });
+	DrawRectangle(toolBarPosX, toolBarPosY, toolBarWidth, toolBarHeight, Color{ 188, 188, 188, 225 });
 
 	for (int i = 0; i < 10; i++)
 	{
-		int toolWidth = (toolBarWidth - 10 * 2) / 10;
-		int toolHeight = toolBarHeight - 4;
-
 		DrawRectangle(toolBarPosX + 2 + (i * (toolWidth + 2)), toolBarPosY + 2, toolWidth, toolHeight, Color{ 45,45,45,225 });
 		DrawText(TextFormat("%i", i + 1), toolBarPosX + 3 + (i * (toolWidth + 2)), toolBarPosY + 2, 15, WHITE);
 	}
+
+	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, toolBarWidth, 10, Color{ 95,0,160,75 });
+
+	if (xpCount >= levelXP)
+	{
+		playerLevel++;
+		xpCount = xpCount - levelXP;
+	}
+
+	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, xpCount / levelXP * toolBarWidth, 10, Color{ 95,0,160,225 });
+
+
+	int xpText = MeasureText(TextFormat("%.0f / %.0f", xpCount, levelXP), 10);
+	DrawText(TextFormat("%.0f / %.0f XP", xpCount, levelXP), toolBarPosX + (toolBarWidth / 2) - xpText / 2, toolBarPosY + toolBarHeight, 10, Color{ 255,255,255,225 });
 }
 
 void Logic::handleOpenCloseBag()
@@ -575,6 +588,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				questReturnValue = 6;
 				questState = QuestState::Done;
 				inventory.removeOrDecreaseItems("woodStash", 10);
+				xpCount += 400;
 
 			}
 			else if (questReturnValue == 2)
@@ -764,17 +778,17 @@ void Logic::handleLevels()
 void Logic::saveGame()
 {
 	outputFile.open("saveGame.txt");
-	if (outputFile.fail())
+	if (!outputFile.fail())
 	{
-	std:perror("saveGame.txt");
+		addToSaveGame("goldCount", inventory.getGoldCount());
+		addToSaveGame("playerLocationX", playerLocation.x);
+		addToSaveGame("playerLocationY", playerLocation.y);
+		addToSaveGame("questReturnValue", questReturnValue);
+		addToSaveGame("playerDirectionX", playerDirection.x);
+		addToSaveGame("playerDirectionY", playerDirection.y);
+		addToSaveGame("xpCount", xpCount);
+		addToSaveGame("playerLevel", playerLevel);
 	}
-	addToSaveGame("goldCount", inventory.getGoldCount());
-	addToSaveGame("playerLocationX", playerLocation.x);
-	addToSaveGame("playerLocationY", playerLocation.y);
-	addToSaveGame("questReturnValue", questReturnValue);
-	addToSaveGame("playerDirectionX", playerDirection.x);
-	addToSaveGame("playerDirectionY", playerDirection.y);
-
 	outputFile.close();
 }
 
@@ -840,6 +854,16 @@ void Logic::loadGame()
 		if (inputData[i] == "playerDirectionY")
 		{
 			playerDirection.y = std::stof(inputData[i + 2]);
+			continue;
+		}
+		if (inputData[i] == "xpCount")
+		{
+			xpCount = std::stoi(inputData[i + 2]);
+			continue;
+		}
+		if (inputData[i] == "playerLevel")
+		{
+			playerLevel = std::stoi(inputData[i + 2]);
 			continue;
 		}
 	}

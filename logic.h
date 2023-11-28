@@ -91,6 +91,10 @@ private:
 	std::ifstream inputFile;
 	std::vector<std::string> inputData;
 
+	float xpCount = 0.f;
+	float levelXP = 5000.f;
+	int playerLevel = 0;
+
 	template <typename T>
 	void addToSaveGame(const char* name, T arg)
 	{
