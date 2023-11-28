@@ -1,8 +1,8 @@
-goldCount : 1126
-playerLocationX : 461.003
-playerLocationY : 458.009
+goldCount : 1131
+playerLocationX : 412.955
+playerLocationY : 439.088
 questReturnValue : 6
 playerDirectionX : 0
 playerDirectionY : 0
-xpCount : 4110
+xpCount : 400
 playerLevel : 0

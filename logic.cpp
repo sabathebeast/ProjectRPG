@@ -7,6 +7,7 @@
 #include "inventory.h"
 #include "map.h"
 #include <string>
+#include "attributes.h"
 
 static const int bagRow = 4;
 static const int bagColumn = 4;
@@ -15,6 +16,7 @@ Scene scene;
 DialogueTree dialogue;
 Inventory inventory;
 Map map;
+Attributes attributes;
 
 Logic::Logic()
 {
@@ -65,7 +67,7 @@ void Logic::createAllGameEntity()
 {
 	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
 	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
-	createBasicGameEntity(scene, windowWidth - 100, 50, houseTexture, "house");
+	createBasicGameEntity(scene, windowWidth - 100.f, 50.f, houseTexture, "house");
 
 	for (int i = 0; i < 10; i++)
 	{
@@ -228,7 +230,7 @@ void Logic::Render()
 				}
 
 				entities.getComponent<PositionComponent>().x = 50;
-				entities.getComponent<PositionComponent>().y = windowHeight - 100;
+				entities.getComponent<PositionComponent>().y = windowHeight - 100.f;
 				entities.isActive = true;
 
 				if (entities.hasComponent<PositionComponent>()
@@ -242,8 +244,8 @@ void Logic::Render()
 				{
 					level = Level::level_0;
 					entities.isActive = false;
-					entities.getComponent<PositionComponent>().x = windowWidth - 100;
-					entities.getComponent<PositionComponent>().y = 50;
+					entities.getComponent<PositionComponent>().x = windowWidth - 100.f;
+					entities.getComponent<PositionComponent>().y = 50.f;
 				}
 			}
 		}
@@ -430,17 +432,17 @@ void Logic::toolBarUI()
 
 	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, toolBarWidth, 10, Color{ 95,0,160,75 });
 
-	if (xpCount >= levelXP)
+	if (attributes.getXPCount() >= attributes.getLevelXP())
 	{
-		playerLevel++;
-		xpCount = xpCount - levelXP;
+		attributes.addToPlayerLevel(1);
+		attributes.setXPCount(attributes.getXPCount() - attributes.getLevelXP());
 	}
 
-	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, xpCount / levelXP * toolBarWidth, 10, Color{ 95,0,160,225 });
+	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, static_cast<int>(attributes.getXPCount() / attributes.getLevelXP() * toolBarWidth), 10, Color{ 95,0,160,225 });
 
 
-	int xpText = MeasureText(TextFormat("%.0f / %.0f", xpCount, levelXP), 10);
-	DrawText(TextFormat("%.0f / %.0f XP", xpCount, levelXP), toolBarPosX + (toolBarWidth / 2) - xpText / 2, toolBarPosY + toolBarHeight, 10, Color{ 255,255,255,225 });
+	int xpText = MeasureText(TextFormat("%.0f / %.0f", attributes.getXPCount(), attributes.getLevelXP()), 10);
+	DrawText(TextFormat("%.0f / %.0f XP", attributes.getXPCount(), attributes.getLevelXP()), toolBarPosX + (toolBarWidth / 2) - xpText / 2, toolBarPosY + toolBarHeight, 10, Color{ 255,255,255,225 });
 }
 
 void Logic::handleOpenCloseBag()
@@ -526,7 +528,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 					gameEntities[i].getComponent<PositionComponent>().y += playerSpeed * deltaTime;
 					if (gameEntities[i].getComponent<PositionComponent>().y + gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2 > windowHeight)
 					{
-						gameEntities[i].getComponent<PositionComponent>().y = windowHeight - gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2;
+						gameEntities[i].getComponent<PositionComponent>().y = static_cast<float>(windowHeight - gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2);
 					}
 				}
 			}
@@ -564,7 +566,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 					gameEntities[i].getComponent<PositionComponent>().x += playerSpeed * deltaTime;
 					if (gameEntities[i].getComponent<PositionComponent>().x + gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2 >= windowWidth)
 					{
-						gameEntities[i].getComponent<PositionComponent>().x = windowWidth - gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2;
+						gameEntities[i].getComponent<PositionComponent>().x = static_cast<float>(windowWidth - gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2);
 					}
 				}
 			}
@@ -588,7 +590,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				questReturnValue = 6;
 				questState = QuestState::Done;
 				inventory.removeOrDecreaseItems("woodStash", 10);
-				xpCount += 400;
+				attributes.addToXPCount(400);
 
 			}
 			else if (questReturnValue == 2)
@@ -786,8 +788,8 @@ void Logic::saveGame()
 		addToSaveGame("questReturnValue", questReturnValue);
 		addToSaveGame("playerDirectionX", playerDirection.x);
 		addToSaveGame("playerDirectionY", playerDirection.y);
-		addToSaveGame("xpCount", xpCount);
-		addToSaveGame("playerLevel", playerLevel);
+		addToSaveGame("xpCount", attributes.getXPCount());
+		addToSaveGame("playerLevel", attributes.getPlayerLevel());
 	}
 	outputFile.close();
 }
@@ -858,12 +860,12 @@ void Logic::loadGame()
 		}
 		if (inputData[i] == "xpCount")
 		{
-			xpCount = std::stoi(inputData[i + 2]);
+			attributes.setXPCount(std::stof(inputData[i + 2]));
 			continue;
 		}
 		if (inputData[i] == "playerLevel")
 		{
-			playerLevel = std::stoi(inputData[i + 2]);
+			attributes.setPlayerLevel(std::stoi(inputData[i + 2]));
 			continue;
 		}
 	}
