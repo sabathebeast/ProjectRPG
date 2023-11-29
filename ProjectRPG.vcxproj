@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="attributes.cpp" />
     <ClCompile Include="dialogue.cpp" />
     <ClCompile Include="inventory.cpp" />
     <ClCompile Include="logic.cpp" />
@@ -137,6 +138,7 @@
     <ClCompile Include="scene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="attributes.h" />
     <ClInclude Include="components.h" />
     <ClInclude Include="dialogue.h" />
     <ClInclude Include="entity.h" />

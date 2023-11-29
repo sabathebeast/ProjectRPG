@@ -48,6 +48,8 @@ private:
 	void showQuest();
 	void bagUI();
 	void toolBarUI();
+	void characterInfoUI();
+	void characterOverlayUI();
 	void handleOpenCloseBag();
 	void handleInventoryIsFull();
 	void playerMovementAndCollisions(float deltaTime);
@@ -78,6 +80,7 @@ private:
 	Sound closeBagSound;
 	Sound inventoryFull;
 	bool isBagOpen = false;
+	bool isCharacterInfoOpen = false;
 	Music themeSong;
 	int questReturnValue = 0;
 	int goldCurrency = 0;

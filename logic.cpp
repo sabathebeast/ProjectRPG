@@ -432,17 +432,57 @@ void Logic::toolBarUI()
 
 	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, toolBarWidth, 10, Color{ 95,0,160,75 });
 
-	if (attributes.getXPCount() >= attributes.getLevelXP())
-	{
-		attributes.addToPlayerLevel(1);
-		attributes.setXPCount(attributes.getXPCount() - attributes.getLevelXP());
-	}
-
 	DrawRectangle(toolBarPosX, toolBarPosY + toolBarHeight, static_cast<int>(attributes.getXPCount() / attributes.getLevelXP() * toolBarWidth), 10, Color{ 95,0,160,225 });
-
 
 	int xpText = MeasureText(TextFormat("%.0f / %.0f", attributes.getXPCount(), attributes.getLevelXP()), 10);
 	DrawText(TextFormat("%.0f / %.0f XP", attributes.getXPCount(), attributes.getLevelXP()), toolBarPosX + (toolBarWidth / 2) - xpText / 2, toolBarPosY + toolBarHeight, 10, Color{ 255,255,255,225 });
+}
+
+void Logic::characterInfoUI()
+{
+	if (isCharacterInfoOpen)
+	{
+		int characterInfoWidth = windowWidth / 2;
+		int characterInfoHeight = windowHeight / 2;
+
+		DrawRectangle(windowWidth / 2 - characterInfoWidth / 2, windowHeight / 2 - characterInfoHeight / 2, characterInfoWidth, characterInfoHeight, Color{ 100,100,100,150 });
+	}
+
+}
+
+void Logic::characterOverlayUI()
+{
+	int characterOverlayWidth = windowWidth / 5;
+	int characterOverlayHeight = windowHeight / 8;
+	int characterImgWidth = windowWidth / 12;
+	int characterImgHeight = windowHeight / 12;
+
+	// overlay background
+	DrawRectangle(5, 5, characterOverlayWidth, characterOverlayHeight, Color{ 45,45,45,175 });
+
+	// character pic
+	DrawRectangle(5, 5, characterImgWidth, characterImgHeight, Color{ 25,25,25,150 });
+	DrawTexturePro(playerTexture, Rectangle{ 0,0, playerTexture.width / 4.f, playerTexture.height / 4.f / 1.5f }, Rectangle{ 5.f + characterImgWidth / 2, 5.f + characterImgHeight / 2,playerTexture.width / 4.f, playerTexture.height / 4.f }, Vector2{ static_cast<float>(playerTexture.width / 4 / 2), static_cast<float>(playerTexture.height / 4 / 2) }, 0.f, WHITE);
+
+	// health
+	DrawRectangle(5, 5 + characterImgHeight, characterOverlayWidth, (characterOverlayHeight - characterImgHeight) / 2, Color{ 136,8,8,150 });
+	DrawRectangle(5, 5 + characterImgHeight, static_cast<int>(attributes.getCurrentHealth() / attributes.getMaxHealth() * characterOverlayWidth), (characterOverlayHeight - characterImgHeight) / 2, Color{ 255,0,0,225 });
+	int hpTextSize = MeasureText(TextFormat("%.0f / %.0f", attributes.getCurrentHealth(), attributes.getMaxHealth()), 12);
+	DrawText(TextFormat("%.0f / %.0f", attributes.getCurrentHealth(), attributes.getMaxHealth()), 5 + characterOverlayWidth / 2 - hpTextSize / 2, 5 + characterImgHeight + (characterOverlayHeight - characterImgHeight) / 2 / 2 - 12 / 2, 12, BLACK);
+
+	// energy
+	DrawRectangle(5, 5 + characterImgHeight + (characterOverlayHeight - characterImgHeight) / 2, characterOverlayWidth, (characterOverlayHeight - characterImgHeight) / 2, Color{ 0,128,0,50 });
+	DrawRectangle(5, 5 + characterImgHeight + (characterOverlayHeight - characterImgHeight) / 2, static_cast<int>(attributes.getCurrentEnergy() / attributes.getMaxEnergy() * characterOverlayWidth), (characterOverlayHeight - characterImgHeight) / 2, Color{ 0,128,0 ,255 });
+	int energyTextSize = MeasureText(TextFormat("%.0f / %.0f", attributes.getCurrentEnergy(), attributes.getMaxEnergy()), 12);
+	DrawText(TextFormat("%.0f / %.0f", attributes.getCurrentEnergy(), attributes.getMaxEnergy()), 5 + characterOverlayWidth / 2 - energyTextSize / 2, 5 + characterImgHeight + (characterOverlayHeight - characterImgHeight) - (characterOverlayHeight - characterImgHeight) / 2 + 12 / 2, 12, BLACK);
+
+	// name
+	int nameTextSize = MeasureText("ARLONG", 25);
+	DrawText("ARLONG", 5 + characterImgWidth + ((characterOverlayWidth - characterImgWidth) / 2) - nameTextSize / 2, 5 + 10, 25, Color{ 255,255,255,200 });
+
+	// lvl
+	int lvlTextSize = MeasureText(TextFormat("LVL: %i", attributes.getPlayerLevel()), 25);
+	DrawText(TextFormat("LVL: %i", attributes.getPlayerLevel()), 5 + characterImgWidth + ((characterOverlayWidth - characterImgWidth) / 2) - lvlTextSize / 2, 5 + characterImgHeight / 2 + 5, 25, Color{ 0,0,0,225 });
 }
 
 void Logic::handleOpenCloseBag()
@@ -590,7 +630,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				questReturnValue = 6;
 				questState = QuestState::Done;
 				inventory.removeOrDecreaseItems("woodStash", 10);
-				attributes.addToXPCount(400);
+				attributes.addToXPCount(6000);
 
 			}
 			else if (questReturnValue == 2)
@@ -877,10 +917,23 @@ void Logic::Update()
 {
 	UpdateMusicStream(themeSong);
 	float deltaTime = GetFrameTime();
+	characterOverlayUI();
 	playerMovementAndCollisions(deltaTime);
 	showQuest();
 	handleOpenCloseBag();
 	bagUI();
 	toolBarUI();
+	if (IsKeyPressed(KEY_C))
+	{
+		if (isCharacterInfoOpen)
+		{
+			isCharacterInfoOpen = false;
+		}
+		else
+		{
+			isCharacterInfoOpen = true;
+		}
+	}
+	characterInfoUI();
 	handleInventoryIsFull();
 }
