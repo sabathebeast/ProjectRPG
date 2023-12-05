@@ -7,5 +7,6 @@ void Attributes::addToXPCount(float amount)
 	{
 		xpCount = xpCount - levelXP;
 		playerLevel++;
+		talentPoints++;
 	}
 }

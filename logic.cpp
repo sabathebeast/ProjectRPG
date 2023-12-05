@@ -229,7 +229,7 @@ void Logic::Render()
 					yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
 				}
 
-				entities.getComponent<PositionComponent>().x = 50;
+				entities.getComponent<PositionComponent>().x = 50.f;
 				entities.getComponent<PositionComponent>().y = windowHeight - 100.f;
 				entities.isActive = true;
 
@@ -352,10 +352,6 @@ void Logic::bagUI()
 				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 			}
 		}
-		else
-		{
-			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-		}
 
 		for (int i = 0; i < bagRow; i++)
 		{
@@ -401,10 +397,6 @@ void Logic::bagUI()
 				}
 			}
 		}
-		else
-		{
-			SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-		}
 	}
 }
 
@@ -444,8 +436,201 @@ void Logic::characterInfoUI()
 	{
 		int characterInfoWidth = windowWidth / 2;
 		int characterInfoHeight = windowHeight / 2;
+		int characterInfoPosX = windowWidth / 2 - characterInfoWidth / 2;
+		int characterInfoPosY = windowHeight / 2 - characterInfoHeight / 2;
+		int padding = 5;
+		int spacing = 30;
+		int armorWindowSize = characterInfoWidth / 2 / 3 - 5;
 
-		DrawRectangle(windowWidth / 2 - characterInfoWidth / 2, windowHeight / 2 - characterInfoHeight / 2, characterInfoWidth, characterInfoHeight, Color{ 100,100,100,150 });
+		// base
+		DrawRectangle(characterInfoPosX, characterInfoPosY, characterInfoWidth, characterInfoHeight, Color{ 0,0,0,100 });
+		// exit
+		DrawRectangle(characterInfoPosX, characterInfoPosY, characterInfoWidth, spacing, BLACK);
+		int characterInfoMenuText = MeasureText("Character info menu (c)", 20);
+		DrawText("Character info menu (c)", characterInfoPosX + characterInfoWidth / 2 - characterInfoMenuText / 2, characterInfoPosY + 5, 20, GRAY);
+		int closeWindowTextSize = MeasureText("x", 25);
+		DrawRectangle(characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7, characterInfoPosY + 5, closeWindowTextSize + 5, 20, MAROON);
+		DrawText("x", characterInfoPosX + characterInfoWidth - closeWindowTextSize - 5, characterInfoPosY + 2, 25, WHITE);
+
+		Vector2 mousePos = GetMousePosition();
+
+		if (mousePos.x > characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7 &&
+			mousePos.x < characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7 + closeWindowTextSize + 5 &&
+			mousePos.y > characterInfoPosY + 5 &&
+			mousePos.y < characterInfoPosY + 5 + 20)
+		{
+			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			{
+				isCharacterInfoOpen = false;
+				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+			}
+		}
+
+		// stats
+		int statsText = MeasureText("STATS", 25);
+		DrawText("STATS", characterInfoPosX + characterInfoWidth / 4 - statsText / 2, characterInfoPosY + padding + spacing, 25, Color{ 45,45,45,225 });
+
+		// points
+		int pointsText = MeasureText(TextFormat("Available points: %i", attributes.getTalentPoints()), 25);
+		DrawText(TextFormat("Available points: %i", attributes.getTalentPoints()), characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - pointsText / 2, characterInfoPosY + spacing + padding, 25, BLACK);
+
+		int rerollPointsText = MeasureText("Reroll points", 25);
+		if (mousePos.x > characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2 &&
+			mousePos.x < characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2 + rerollPointsText &&
+			mousePos.y > characterInfoPosY + 2 * spacing + padding &&
+			mousePos.y < characterInfoPosY + 2 * spacing + padding + 25)
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2, characterInfoPosY + 2 * spacing + padding, rerollPointsText, 25, GREEN);
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			{
+				attributes.addToTalentPoints(attributes.getExtraStrenght() + attributes.getExtraAgility() + attributes.getExtraStamina());
+				attributes.removeFromExtraAgility(attributes.getExtraAgility());
+				attributes.removeFromExtraStamina(attributes.getExtraStamina());
+				attributes.removeFromExtraStrenght(attributes.getExtraStrenght());
+			}
+		}
+		else
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2, characterInfoPosY + 2 * spacing + padding, rerollPointsText, 25, RED);
+		}
+		DrawText("Reroll points", characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2, characterInfoPosY + 2 * spacing + padding, 25, BLACK);
+
+		// armor
+		int armorText = MeasureText("ARMOUR", 40);
+		DrawText("ARMOUR", characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorText / 2, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding - static_cast<int>(1.5 * spacing), 40, Color{ 45,45,45,225 });
+
+		// health
+		int healthText = MeasureText(TextFormat("Health: %.0f / %.0f", attributes.getCurrentHealth(), attributes.getMaxHealth()), 20);
+		DrawText(TextFormat("Health: %.0f / %.0f", attributes.getCurrentHealth(), attributes.getMaxHealth()), characterInfoPosX + characterInfoWidth / 4 - healthText / 2, characterInfoPosY + 2 * spacing + padding, 20, RED);
+
+		// energy
+		int energyText = MeasureText(TextFormat("Energy: %.0f / %.0f", attributes.getCurrentEnergy(), attributes.getMaxEnergy()), 20);
+		DrawText(TextFormat("Energy: %.0f / %.0f", attributes.getCurrentEnergy(), attributes.getMaxEnergy()), characterInfoPosX + characterInfoWidth / 4 - energyText / 2, characterInfoPosY + 3 * spacing + padding, 20, DARKGREEN);
+
+		// stats mod
+		DrawRectangle(characterInfoPosX + padding, characterInfoPosY + padding + 4 * spacing, characterInfoWidth / 2 - 2 * padding, 5 * spacing, Color{ 80, 80, 80, 200 });
+		int attributesText = MeasureText("Attributes", 20);
+		DrawText("Attributes", characterInfoPosX + characterInfoWidth / 2 - characterInfoWidth / 4 - attributesText / 2, characterInfoPosY + 2 * padding + 4 * spacing, 20, BLACK);
+
+		int plusText = MeasureText("x", 20);
+		int minusText = MeasureText("-", 20);
+
+		for (int i = 0; i < 3; i++)
+		{
+			DrawRectangle(characterInfoPosX + padding, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 4, spacing, Color{ 45,45,45,200 });
+			DrawRectangle(characterInfoPosX + 2 * padding + characterInfoWidth / 4, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 8 - 2 * padding, spacing, Color{ 45,45,45,200 });
+
+			if (mousePos.x > characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 &&
+				mousePos.x < characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 - 2 * padding &&
+				mousePos.y > characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding &&
+				mousePos.y < characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing)
+			{
+				DrawRectangle(characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, GREEN);
+				DrawText("+", characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 32 - plusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, BLACK);
+				if (attributes.getTalentPoints() > 0 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				{
+					switch (i)
+					{
+					case 0:
+						attributes.addToExtraStrenght(1);
+						attributes.removeFromTalentPoints(1);
+						break;
+					case 1:
+						attributes.addToExtraStamina(1);
+						attributes.removeFromTalentPoints(1);
+						break;
+					case 2:
+						attributes.addToExtraAgility(1);
+						attributes.removeFromTalentPoints(1);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			else
+			{
+				DrawRectangle(characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, Color{ 45,45,45,200 });
+				DrawText("+", characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 32 - plusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, GREEN);
+			}
+
+			if (mousePos.x > characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 &&
+				mousePos.x < characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + characterInfoWidth / 16 - 2 * padding &&
+				mousePos.y > characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding &&
+				mousePos.y < characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing)
+			{
+				DrawRectangle(characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, RED);
+				DrawText("-", characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + minusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, BLACK);
+
+				if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				{
+					switch (i)
+					{
+					case 0:
+						if (attributes.getExtraStrenght() > 0)
+						{
+							attributes.removeFromExtraStrenght(1);
+							attributes.addToTalentPoints(1);
+						}
+						break;
+					case 1:
+						if (attributes.getExtraStamina() > 0)
+						{
+							attributes.removeFromExtraStamina(1);
+							attributes.addToTalentPoints(1);
+						}
+						break;
+					case 2:
+						if (attributes.getExtraAgility() > 0)
+						{
+							attributes.removeFromExtraAgility(1);
+							attributes.addToTalentPoints(1);
+						}
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			else
+			{
+				DrawRectangle(characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, Color{ 45,45,45,200 });
+				DrawText("-", characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + minusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, RED);
+			}
+		}
+		int strenghtText = MeasureText("Strenght", 20);
+		DrawText("Strenght", characterInfoPosX + characterInfoWidth / 8 - strenghtText / 2, characterInfoPosY + 3 * padding + 5 * spacing, 20, WHITE);
+		int strenghtNumberText = MeasureText(TextFormat("%i", attributes.getStrenght()), 20);
+		DrawText(TextFormat("%i", attributes.getStrenght()), characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 16 - strenghtNumberText / 2, characterInfoPosY + 3 * padding + 5 * spacing, 20, WHITE);
+		int staminaText = MeasureText("Stamina", 20);
+		DrawText("Stamina", characterInfoPosX + characterInfoWidth / 8 - staminaText / 2, characterInfoPosY + 4 * padding + 6 * spacing, 20, WHITE);
+		int staminaNumberText = MeasureText(TextFormat("%i", attributes.getStamina()), 20);
+		DrawText(TextFormat("%i", attributes.getStamina()), characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 16 - staminaNumberText / 2, characterInfoPosY + 4 * padding + 6 * spacing, 20, WHITE);
+		int agilityText = MeasureText("Agility", 20);
+		DrawText("Agility", characterInfoPosX + characterInfoWidth / 8 - agilityText / 2, characterInfoPosY + 5 * padding + 7 * spacing, 20, WHITE);
+		int agilityNumberText = MeasureText(TextFormat("%i", attributes.getAgility()), 20);
+		DrawText(TextFormat("%i", attributes.getAgility()), characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 16 - agilityNumberText / 2, characterInfoPosY + 5 * padding + 7 * spacing, 20, WHITE);
+
+		// middle of armor
+		for (int i = 0; i < 4; i++)
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorWindowSize / 2, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding + (i * armorWindowSize) + (i * padding), armorWindowSize, armorWindowSize, BLACK);
+		}
+
+		// left side of armor
+		for (int i = 0; i < 2; i++)
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorWindowSize / 2 - armorWindowSize - padding, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding + (i * 3 * armorWindowSize) + (i * 3 * padding), armorWindowSize, armorWindowSize, BLACK);
+		}
+		DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorWindowSize / 2 - armorWindowSize - padding, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding + armorWindowSize + padding, armorWindowSize, 2 * armorWindowSize + padding, BLACK);
+
+		// right side of armor
+		for (int i = 0; i < 2; i++)
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorWindowSize / 2 + armorWindowSize + padding, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding + (i * 3 * armorWindowSize) + (i * 3 * padding), armorWindowSize, armorWindowSize, BLACK);
+		}
+		DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - armorWindowSize / 2 + armorWindowSize + padding, characterInfoPosY + characterInfoHeight - 4 * armorWindowSize - 4 * padding + armorWindowSize + padding, armorWindowSize, 2 * armorWindowSize + padding, BLACK);
 	}
 
 }
@@ -830,6 +1015,18 @@ void Logic::saveGame()
 		addToSaveGame("playerDirectionY", playerDirection.y);
 		addToSaveGame("xpCount", attributes.getXPCount());
 		addToSaveGame("playerLevel", attributes.getPlayerLevel());
+		addToSaveGame("levelXP", attributes.getLevelXP());
+		addToSaveGame("strenght", attributes.getStrenght());
+		addToSaveGame("extraStrenght", attributes.getExtraStrenght());
+		addToSaveGame("agility", attributes.getAgility());
+		addToSaveGame("extraAgility", attributes.getExtraAgility());
+		addToSaveGame("stamina", attributes.getStamina());
+		addToSaveGame("extraStamina", attributes.getExtraStamina());
+		addToSaveGame("currentHealth", attributes.getCurrentHealth());
+		addToSaveGame("maxHealth", attributes.getMaxHealth());
+		addToSaveGame("currentEnergy", attributes.getCurrentEnergy());
+		addToSaveGame("maxEnergy", attributes.getMaxEnergy());
+		addToSaveGame("talentPoints", attributes.getTalentPoints());
 	}
 	outputFile.close();
 }
@@ -837,79 +1034,137 @@ void Logic::saveGame()
 void Logic::loadGame()
 {
 	inputFile.open("saveGame.txt");
-	if (inputFile.fail())
-	{
-		std::perror("saveGame.txt");
-	}
-
 	std::string input;
 
-	while (inputFile >> input)
+	if (!inputFile.fail())
 	{
-		inputData.push_back(input);
-	}
-
-	for (int i = 0; i < inputData.size(); i += 3)
-	{
-		if (inputData[i] == "goldCount")
+		while (inputFile >> input)
 		{
-			inventory.setGoldCount(std::stoi(inputData[i + 2]));
-			continue;
+			inputData.push_back(input);
 		}
-		if (inputData[i] == "playerLocationX")
+		if (!inputData.empty())
 		{
-			for (auto& entities : gameEntities)
+			for (int i = 0; i < inputData.size(); i += 3)
 			{
-				if (entities.getComponent<TagComponent>().tag == "player")
+				if (inputData[i] == "goldCount")
 				{
-					entities.getComponent<PositionComponent>().x = std::stof(inputData[i + 2]);
-					break;
+					inventory.setGoldCount(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "playerLocationX")
+				{
+					for (auto& entities : gameEntities)
+					{
+						if (entities.getComponent<TagComponent>().tag == "player")
+						{
+							entities.getComponent<PositionComponent>().x = std::stof(inputData[i + 2]);
+							break;
+						}
+					}
+					playerLocation.x = std::stof(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "playerLocationY")
+				{
+					for (auto& entities : gameEntities)
+					{
+						if (entities.getComponent<TagComponent>().tag == "player")
+						{
+							entities.getComponent<PositionComponent>().y = std::stof(inputData[i + 2]);
+							break;
+						}
+					}
+					playerLocation.y = std::stof(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "questReturnValue")
+				{
+					questReturnValue = std::stoi(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "playerDirectionX")
+				{
+					playerDirection.x = std::stof(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "playerDirectionY")
+				{
+					playerDirection.y = std::stof(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "xpCount")
+				{
+					attributes.setXPCount(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "playerLevel")
+				{
+					attributes.setPlayerLevel(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "levelXP")
+				{
+					attributes.setLevelXP(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "strenght")
+				{
+					attributes.setStrenght(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "extraStrenght")
+				{
+					attributes.setExtraStrenght(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "agility")
+				{
+					attributes.setAgility(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "extraAgility")
+				{
+					attributes.setExtraAgility(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "stamina")
+				{
+					attributes.setStamina(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "extraStamina")
+				{
+					attributes.setExtraStamina(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "currentHealth")
+				{
+					attributes.setCurrentHealth(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "maxHealth")
+				{
+					attributes.setMaxHealth(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "currentEnergy")
+				{
+					attributes.setCurrentEnergy(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "maxEnergy")
+				{
+					attributes.setMaxEnergy(std::stof(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "talentPoints")
+				{
+					attributes.setTalentPoints(std::stoi(inputData[i + 2]));
+					continue;
 				}
 			}
-			playerLocation.x = std::stof(inputData[i + 2]);
-			continue;
-		}
-		if (inputData[i] == "playerLocationY")
-		{
-			for (auto& entities : gameEntities)
-			{
-				if (entities.getComponent<TagComponent>().tag == "player")
-				{
-					entities.getComponent<PositionComponent>().y = std::stof(inputData[i + 2]);
-					break;
-				}
-			}
-			playerLocation.y = std::stof(inputData[i + 2]);
-			continue;
-		}
-		if (inputData[i] == "questReturnValue")
-		{
-			questReturnValue = std::stoi(inputData[i + 2]);
-			continue;
-		}
-		if (inputData[i] == "playerDirectionX")
-		{
-			playerDirection.x = std::stof(inputData[i + 2]);
-			continue;
-		}
-
-		if (inputData[i] == "playerDirectionY")
-		{
-			playerDirection.y = std::stof(inputData[i + 2]);
-			continue;
-		}
-		if (inputData[i] == "xpCount")
-		{
-			attributes.setXPCount(std::stof(inputData[i + 2]));
-			continue;
-		}
-		if (inputData[i] == "playerLevel")
-		{
-			attributes.setPlayerLevel(std::stoi(inputData[i + 2]));
-			continue;
 		}
 	}
-
 	inputFile.close();
 }
 
