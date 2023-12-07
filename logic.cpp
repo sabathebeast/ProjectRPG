@@ -666,8 +666,8 @@ void Logic::characterOverlayUI()
 	DrawText(TextFormat("%.0f / %.0f", attributes.getCurrentEnergy(), attributes.getMaxEnergy()), 5 + characterOverlayWidth / 2 - energyTextSize / 2, 5 + characterImgHeight + (characterOverlayHeight - characterImgHeight) - (characterOverlayHeight - characterImgHeight) / 2 + 12 / 2, 12, BLACK);
 
 	// name
-	int nameTextSize = MeasureText("ARLONG", 25);
-	DrawText("ARLONG", 5 + characterImgWidth + ((characterOverlayWidth - characterImgWidth) / 2) - nameTextSize / 2, 5 + 10, 25, Color{ 255,255,255,200 });
+	int nameTextSize = MeasureText(TextFormat("%s", playerName.c_str()), 25);
+	DrawText(TextFormat("%s", playerName.c_str()), 5 + characterImgWidth + ((characterOverlayWidth - characterImgWidth) / 2) - nameTextSize / 2, 5 + 10, 25, Color{ 255,255,255,200 });
 
 	// lvl
 	int lvlTextSize = MeasureText(TextFormat("LVL: %i", attributes.getPlayerLevel()), 25);
@@ -1026,6 +1026,8 @@ void Logic::saveGame()
 	outputFile.open("saveGame.txt");
 	if (!outputFile.fail())
 	{
+		addToSaveGame("name", playerName);
+		addToSaveGame("isNameGiven", isNameGiven);
 		addToSaveGame("goldCount", inventory.getGoldCount());
 		addToSaveGame("playerLocationX", playerLocation.x);
 		addToSaveGame("playerLocationY", playerLocation.y);
@@ -1065,6 +1067,21 @@ void Logic::loadGame()
 		{
 			for (int i = 0; i < inputData.size(); i += 3)
 			{
+				if (inputData[i] == "name")
+				{
+					playerName = inputData[i + 2];
+				}
+				if (inputData[i] == "isNameGiven")
+				{
+					if (std::stoi(inputData[i + 2]) == 1)
+					{
+						isNameGiven = true;
+					}
+					else
+					{
+						isNameGiven = false;
+					}
+				}
 				if (inputData[i] == "goldCount")
 				{
 					inventory.setGoldCount(std::stoi(inputData[i + 2]));
@@ -1261,20 +1278,60 @@ void Logic::energyRegenerate(double currentTime)
 
 void Logic::Update()
 {
-	UpdateMusicStream(themeSong);
-	float deltaTime = GetFrameTime();
+	if (!isNameGiven)
+	{
+		int textBoxWidth = windowWidth / 2;
+		int textBoxHeight = windowHeight / 14;
 
-	setStats();
+		int key = GetCharPressed();
+		while (key > 0)
+		{
+			if ((key >= 32) && (key <= 125) && (letterCount < MAX_NAME_CHAR))
+			{
+				name[letterCount] = (char)key;
+				name[letterCount + 1] = '\0';
+				letterCount++;
+			}
+			key = GetCharPressed();
+		}
+		if (IsKeyPressed(KEY_BACKSPACE))
+		{
+			letterCount--;
+			if (letterCount < 0) letterCount = 0;
+			name[letterCount] = '\0';
+		}
+		int annoText = MeasureText("Please type your name!", 25);
+		DrawRectangle(windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, annoText, 30, RED);
+		DrawText("Please type your name!", windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, 25, BLACK);
+		DrawRectangle(windowWidth / 2 - textBoxWidth / 2, windowHeight / 2 - textBoxHeight / 2, textBoxWidth, textBoxHeight, BLACK);
+		int nameTextSize = MeasureText(TextFormat("%s", name), 40);
+		DrawText(name, windowWidth / 2 - nameTextSize / 2, windowHeight / 2 - 20, 40, MAROON);
+		int enterText = MeasureText("and hit enter..", 25);
+		DrawRectangle(windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2, enterText, 30, RED);
+		DrawText("and hit enter..", windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2 + 5, 25, BLACK);
+		if (IsKeyPressed(KEY_ENTER))
+		{
+			isNameGiven = true;
+			playerName = name;
+		}
+	}
+	else
+	{
+		UpdateMusicStream(themeSong);
+		float deltaTime = GetFrameTime();
 
-	double currentTime = GetTime();
-	healthRegenerate(currentTime);
-	energyRegenerate(currentTime);
+		setStats();
 
-	characterOverlayUI();
-	playerMovementAndCollisions(deltaTime);
-	showQuest();
-	bagUI();
-	toolBarUI();
-	characterInfoUI();
-	handleInventoryIsFull();
+		double currentTime = GetTime();
+		healthRegenerate(currentTime);
+		energyRegenerate(currentTime);
+
+		characterOverlayUI();
+		playerMovementAndCollisions(deltaTime);
+		showQuest();
+		bagUI();
+		toolBarUI();
+		characterInfoUI();
+		handleInventoryIsFull();
+	}
 }

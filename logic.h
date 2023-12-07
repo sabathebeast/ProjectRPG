@@ -4,6 +4,9 @@
 #include <vector>
 #include <memory>
 #include <fstream>
+#include <string>
+
+constexpr char MAX_NAME_CHAR = 6;
 
 enum class Level : unsigned char
 {
@@ -94,6 +97,10 @@ private:
 	int goldCurrency = 0;
 	int playerFramesX = 0;
 	int playerFramesY = 0;
+	int letterCount = 0;
+	char name[MAX_NAME_CHAR + 1] = "\0";
+	std::string playerName;
+	bool isNameGiven = false;
 	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
 	Level level = Level::level_0;
