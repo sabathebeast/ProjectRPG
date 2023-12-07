@@ -52,11 +52,18 @@ private:
 	void characterOverlayUI();
 	void handleOpenCloseBag();
 	void handleInventoryIsFull();
+	void handleOpenCloseCharacterInfo();
 	void playerMovementAndCollisions(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
 	void saveGame();
 	void loadGame();
+	void healthRegenerate(double currentTime);
+	void energyRegenerate(double currentTime);
+	bool isEnergyRegenerateTimerStarted = true;
+	double energyRegenerateTime = 0.0;
+	bool isHealthRegenerateTimerStarted = true;
+	double healthRegenerateTime = 0.0;
 	Texture playerTexture;
 	Texture vendorTexture;
 	Texture woodStashTexture;

@@ -55,6 +55,9 @@ public:
 	inline void addToExtraStamina(int amount) { extraStamina = extraStamina + amount; stamina = stamina + amount; }
 	inline void removeFromExtraStamina(int amount) { extraStamina = extraStamina - amount; stamina = stamina - amount; }
 
+	inline const float getHealthRegenerateRate() const { return healthRegenerateRate; }
+	inline const float getEnergyRegenerateRate() const { return energyRegenerateRate; }
+
 private:
 	float xpCount = 0.f;
 	float levelXP = 5000.f;
@@ -67,7 +70,9 @@ private:
 	int extraStamina = 0;
 	float currentHealth = 100;
 	float maxHealth = 100 + stamina * 100.f;
+	float healthRegenerateRate = 1.5f;
 	float currentEnergy = 100;
 	float maxEnergy = 100 + agility * 100.f;
+	float energyRegenerateRate = 2.5f;
 	int talentPoints = 10;
 };

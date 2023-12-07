@@ -318,6 +318,8 @@ void Logic::showQuest()
 
 void Logic::bagUI()
 {
+	handleOpenCloseBag();
+
 	if (isBagOpen)
 	{
 		int inventoryWidth = 210;
@@ -432,6 +434,8 @@ void Logic::toolBarUI()
 
 void Logic::characterInfoUI()
 {
+	handleOpenCloseCharacterInfo();
+
 	if (isCharacterInfoOpen)
 	{
 		int characterInfoWidth = windowWidth / 2;
@@ -691,6 +695,21 @@ void Logic::handleInventoryIsFull()
 	{
 		PlaySound(inventoryFull);
 		inventory.canAddItems = true;
+	}
+}
+
+void Logic::handleOpenCloseCharacterInfo()
+{
+	if (IsKeyPressed(KEY_C))
+	{
+		if (isCharacterInfoOpen)
+		{
+			isCharacterInfoOpen = false;
+		}
+		else
+		{
+			isCharacterInfoOpen = true;
+		}
 	}
 }
 
@@ -1168,27 +1187,71 @@ void Logic::loadGame()
 	inputFile.close();
 }
 
+void Logic::healthRegenerate(double currentTime)
+{
+	if (isHealthRegenerateTimerStarted)
+	{
+		healthRegenerateTime = GetTime();
+		isHealthRegenerateTimerStarted = false;
+	}
+
+	if (healthRegenerateTime + 5.0 <= currentTime)
+	{
+		if (attributes.getCurrentHealth() < attributes.getMaxHealth())
+		{
+			if (attributes.getCurrentHealth() + attributes.getHealthRegenerateRate() < attributes.getMaxHealth())
+			{
+				attributes.setCurrentHealth(attributes.getCurrentHealth() + attributes.getHealthRegenerateRate());
+			}
+			else
+			{
+				attributes.setCurrentHealth(attributes.getCurrentHealth() + (attributes.getMaxHealth() - attributes.getCurrentHealth()));
+			}
+		}
+		isHealthRegenerateTimerStarted = true;
+	}
+}
+
+void Logic::energyRegenerate(double currentTime)
+{
+	if (isEnergyRegenerateTimerStarted)
+	{
+		energyRegenerateTime = GetTime();
+		isEnergyRegenerateTimerStarted = false;
+	}
+
+	if (energyRegenerateTime + 5.0 <= currentTime)
+	{
+		if (attributes.getCurrentEnergy() < attributes.getMaxEnergy())
+		{
+			if (attributes.getCurrentEnergy() + attributes.getEnergyRegenerateRate() < attributes.getMaxEnergy())
+			{
+				attributes.setCurrentEnergy(attributes.getCurrentEnergy() + attributes.getEnergyRegenerateRate());
+			}
+			else
+			{
+				attributes.setCurrentEnergy(attributes.getCurrentEnergy() + (attributes.getMaxEnergy() - attributes.getCurrentEnergy()));
+			}
+		}
+		isEnergyRegenerateTimerStarted = true;
+	}
+}
+
+
 void Logic::Update()
 {
 	UpdateMusicStream(themeSong);
 	float deltaTime = GetFrameTime();
+
+	double currentTime = GetTime();
+	healthRegenerate(currentTime);
+	energyRegenerate(currentTime);
+
 	characterOverlayUI();
 	playerMovementAndCollisions(deltaTime);
 	showQuest();
-	handleOpenCloseBag();
 	bagUI();
 	toolBarUI();
-	if (IsKeyPressed(KEY_C))
-	{
-		if (isCharacterInfoOpen)
-		{
-			isCharacterInfoOpen = false;
-		}
-		else
-		{
-			isCharacterInfoOpen = true;
-		}
-	}
 	characterInfoUI();
 	handleInventoryIsFull();
 }
