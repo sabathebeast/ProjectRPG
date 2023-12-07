@@ -1187,6 +1187,27 @@ void Logic::loadGame()
 	inputFile.close();
 }
 
+void Logic::setStats()
+{
+	if (attributes.getCurrentEnergy() > attributes.getMaxEnergy())
+	{
+		attributes.setCurrentEnergy(attributes.getMaxEnergy());
+	}
+	else
+	{
+		attributes.setMaxEnergy((attributes.getAgility() + attributes.getExtraAgility()) * 20.f);
+	}
+
+	if (attributes.getCurrentHealth() > attributes.getMaxHealth())
+	{
+		attributes.setCurrentHealth(attributes.getMaxHealth());
+	}
+	else
+	{
+		attributes.setMaxHealth((attributes.getStamina() + attributes.getExtraStamina()) * 25.f);
+	}
+}
+
 void Logic::healthRegenerate(double currentTime)
 {
 	if (isHealthRegenerateTimerStarted)
@@ -1242,6 +1263,8 @@ void Logic::Update()
 {
 	UpdateMusicStream(themeSong);
 	float deltaTime = GetFrameTime();
+
+	setStats();
 
 	double currentTime = GetTime();
 	healthRegenerate(currentTime);

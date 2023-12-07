@@ -58,6 +58,7 @@ private:
 	void handleLevels();
 	void saveGame();
 	void loadGame();
+	void setStats();
 	void healthRegenerate(double currentTime);
 	void energyRegenerate(double currentTime);
 	bool isEnergyRegenerateTimerStarted = true;

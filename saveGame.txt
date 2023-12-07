@@ -1,8 +1,8 @@
 goldCount : 5
-playerLocationX : 511.786
-playerLocationY : 419.683
+playerLocationX : 438.024
+playerLocationY : 249.93
 questReturnValue : 6
-playerDirectionX : -0.716721
+playerDirectionX : 0
 playerDirectionY : 0
 xpCount : 1000
 playerLevel : 2
@@ -13,8 +13,8 @@ agility : 5
 extraAgility : 0
 stamina : 10
 extraStamina : 0
-currentHealth : 161.5
-maxHealth : 1100
-currentEnergy : 157.5
-maxEnergy : 600
-talentPoints : 11
+currentHealth : 193
+maxHealth : 250
+currentEnergy : 100
+maxEnergy : 100
+talentPoints : 10

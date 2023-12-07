@@ -69,10 +69,10 @@ private:
 	int stamina = 10;
 	int extraStamina = 0;
 	float currentHealth = 100;
-	float maxHealth = 100 + stamina * 100.f;
+	float maxHealth = 100;
 	float healthRegenerateRate = 1.5f;
 	float currentEnergy = 100;
-	float maxEnergy = 100 + agility * 100.f;
+	float maxEnergy = 100;
 	float energyRegenerateRate = 2.5f;
 	int talentPoints = 10;
 };
