@@ -23,7 +23,7 @@ void Inventory::sortItems()
 {
 	for (int i = 0; i < items.size(); i++)
 	{
-		if (items.back().id == items[i].id && i < items.size() - 1)
+		if (items.back().id == items[i].id && i < items.size() - 1 && (items.back().quantity + items[i].quantity) <= items[i].stackSize)
 		{
 			items[i].quantity = items[i].quantity + items.back().quantity;
 			items.pop_back();

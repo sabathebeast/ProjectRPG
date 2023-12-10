@@ -21,12 +21,13 @@ Attributes attributes;
 Logic::Logic()
 {
 	initializeAllTexture();
+	loadGame();
 	createAllGameEntity();
 	getPlayerFramesXY();
 	playerSpeed = 200.f;
 	dialogue.init();
 	initializeAllSound();
-	loadGame();
+
 }
 
 Logic::~Logic()
@@ -69,25 +70,59 @@ void Logic::createAllGameEntity()
 	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
 	createBasicGameEntity(scene, windowWidth - 100.f, 50.f, houseTexture, "house");
 
-	for (int i = 0; i < 10; i++)
+	if (!inventory.getItems().empty())
 	{
-		int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
-		int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+		for (int i = 0; i < inventory.getItems().size(); i++)
+		{
+			if (inventory.getItems()[i].id == "woodStash")
+			{
+				for (int a = 0; a < 10 - inventory.getItems()[i].quantity; a++)
+				{
+					int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
+					int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+				}
+			}
+			else if (inventory.getItems()[i].id == "fish")
+			{
+				for (int b = 0; b < 10 - inventory.getItems()[i].quantity; b++)
+				{
+					int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
+					int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
+				}
+			}
+			else if (inventory.getItems()[i].id == "barrel")
+			{
+				for (int c = 0; c < 10 - inventory.getItems()[i].quantity; c++)
+				{
+					int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
+					int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+				}
+			}
+		}
 	}
-
-	for (int i = 0; i < 10; i++)
+	else
 	{
-		int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
-		int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
-	}
-
-	for (int i = 0; i < 10; i++)
-	{
-		int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
-		int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
-		createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+		for (int a = 0; a < 10; a++)
+		{
+			int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
+			int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+		}
+		for (int b = 0; b < 10; b++)
+		{
+			int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
+			int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
+		}
+		for (int c = 0; c < 10; c++)
+		{
+			int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
+			int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+		}
 	}
 }
 
@@ -364,7 +399,8 @@ void Logic::bagUI()
 
 				if (!inventory.getItems().empty() && inventory.getItems().size() > j + i * bagRow)
 				{
-					DrawTexture(inventory.getItems()[j + i * bagRow].texture, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), WHITE);
+					//DrawTexture(inventory.getItems()[j + i * bagRow].texture, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), WHITE);
+					DrawTexturePro(inventory.getItems()[j + i * bagRow].texture, Rectangle{ 0.f,0.f,(float)inventory.getItems()[j + i * bagRow].texture.width, (float)inventory.getItems()[j + i * bagRow].texture.height }, Rectangle{ (float)inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) ,(float)inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1),(float)inventoryWidth / bagRow - 1,(float)(inventoryHeight - headerOffset) / bagColumn - 1 }, { 0.f,0.f }, 0.f, WHITE);
 					DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), 20, WHITE);
 
 					if (mousePos.x > inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) &&
@@ -1050,6 +1086,16 @@ void Logic::saveGame()
 		addToSaveGame("talentPoints", attributes.getTalentPoints());
 	}
 	outputFile.close();
+
+	outputFile.open("inventory.txt");
+	if (!outputFile.fail())
+	{
+		for (int i = 0; i < inventory.getItems().size(); i++)
+		{
+			addToInventory(inventory.getItems()[i].id, inventory.getItems()[i].isStackable, inventory.getItems()[i].stackSize, inventory.getItems()[i].quantity, (int)inventory.getItems()[i].itemType);
+		}
+	}
+	outputFile.close();
 }
 
 void Logic::loadGame()
@@ -1202,6 +1248,65 @@ void Logic::loadGame()
 		}
 	}
 	inputFile.close();
+
+	// load inventory
+	inputFile.open("inventory.txt");
+	inputData.clear();
+
+	if (!inputFile.fail())
+	{
+		while (inputFile >> input)
+		{
+			inputData.push_back(input);
+		}
+		if (!inputData.empty())
+		{
+			for (int i = 0; i < inputData.size(); i += 6)
+			{
+				if (inputData[i] == "fish")
+				{
+					Item fish;
+					fish.id = "fish";
+					fish.isStackable = std::stoi(inputData[i + 2]);
+					fish.stackSize = std::stoi(inputData[i + 3]);
+					fish.quantity = std::stoi(inputData[i + 4]);
+					fish.itemType = (ItemType)std::stoi(inputData[i + 5]);
+					fish.texture = fishTexture;
+					inventory.addItem(fish);
+					continue;
+				}
+				else if (inputData[i] == "barrel")
+				{
+
+					Item barrel;
+					barrel.id = "barrel";
+					barrel.isStackable = std::stoi(inputData[i + 2]);
+					barrel.stackSize = std::stoi(inputData[i + 3]);
+					barrel.quantity = std::stoi(inputData[i + 4]);
+					barrel.itemType = (ItemType)std::stoi(inputData[i + 5]);
+					barrel.texture = barrelTexture;
+					inventory.addItem(barrel);
+					continue;
+				}
+				else if (inputData[i] == "woodStash")
+				{
+
+					Item woodStash;
+					woodStash.id = "woodStash";
+					woodStash.isStackable = std::stoi(inputData[i + 2]);
+					woodStash.stackSize = std::stoi(inputData[i + 3]);
+					woodStash.quantity = std::stoi(inputData[i + 4]);
+					woodStash.itemType = (ItemType)std::stoi(inputData[i + 5]);
+					woodStash.texture = woodStashTexture;
+					inventory.addItem(woodStash);
+					continue;
+				}
+			}
+		}
+
+
+	}
+	inputFile.close();
 }
 
 void Logic::setStats()
@@ -1274,7 +1379,6 @@ void Logic::energyRegenerate(double currentTime)
 		isEnergyRegenerateTimerStarted = true;
 	}
 }
-
 
 void Logic::Update()
 {

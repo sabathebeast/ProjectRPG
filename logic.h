@@ -114,4 +114,10 @@ private:
 	{
 		outputFile << name << " " << ":" << " " << arg << "\n";
 	}
+
+	template <typename A, typename B, typename C, typename D, typename E>
+	void addToInventory(A arg0, B arg1, C arg2, D arg3, E arg4)
+	{
+		outputFile << arg0 << " " << ":" << " " << arg1 << " " << arg2 << " " << arg3 << " " << arg4 << "\n";
+	}
 };

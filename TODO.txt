@@ -1,0 +1,4 @@
+-change mouse cursor pointer type to default when not on "x" (all case)
+-add more quests/npcs
+-add enemy
+-add weapon and damage..
