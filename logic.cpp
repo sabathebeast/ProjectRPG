@@ -21,13 +21,11 @@ Attributes attributes;
 Logic::Logic()
 {
 	initializeAllTexture();
-	loadGame();
 	createAllGameEntity();
 	getPlayerFramesXY();
 	playerSpeed = 200.f;
 	dialogue.init();
 	initializeAllSound();
-
 }
 
 Logic::~Logic()
@@ -69,6 +67,8 @@ void Logic::createAllGameEntity()
 	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
 	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
 	createBasicGameEntity(scene, windowWidth - 100.f, 50.f, houseTexture, "house");
+
+	loadGame();
 
 	if (!inventory.getItems().empty())
 	{
@@ -372,8 +372,6 @@ void Logic::bagUI()
 		int closeWindowPositionX = inventoryPositionX + inventoryWidth - 20;
 		int closeWindowPositionY = inventoryPositionY;
 		int closeWindowTextSize = MeasureText("x", 25);
-		DrawRectangle(closeWindowPositionX - 2, closeWindowPositionY + 4, closeWindowTextSize + 5, 20, MAROON);
-		DrawText("x", closeWindowPositionX, closeWindowPositionY, 25, WHITE);
 
 		Vector2 mousePos = GetMousePosition();
 
@@ -382,12 +380,17 @@ void Logic::bagUI()
 			mousePos.y > closeWindowPositionY &&
 			mousePos.y < closeWindowPositionY + 25)
 		{
-			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			DrawRectangle(closeWindowPositionX - 2, closeWindowPositionY + 4, closeWindowTextSize + 5, 20, BLACK);
+			DrawText("x", closeWindowPositionX, closeWindowPositionY, 25, RED);
 			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 			{
 				closeBag();
-				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 			}
+		}
+		else
+		{
+			DrawRectangle(closeWindowPositionX - 2, closeWindowPositionY + 4, closeWindowTextSize + 5, 20, MAROON);
+			DrawText("x", closeWindowPositionX, closeWindowPositionY, 25, WHITE);
 		}
 
 		for (int i = 0; i < bagRow; i++)
@@ -485,12 +488,10 @@ void Logic::characterInfoUI()
 		// base
 		DrawRectangle(characterInfoPosX, characterInfoPosY, characterInfoWidth, characterInfoHeight, Color{ 0,0,0,100 });
 		// exit
-		DrawRectangle(characterInfoPosX, characterInfoPosY, characterInfoWidth, spacing, BLACK);
+		DrawRectangle(characterInfoPosX, characterInfoPosY, characterInfoWidth, spacing, GRAY);
 		int characterInfoMenuText = MeasureText("Character info menu (c)", 20);
-		DrawText("Character info menu (c)", characterInfoPosX + characterInfoWidth / 2 - characterInfoMenuText / 2, characterInfoPosY + 5, 20, GRAY);
+		DrawText("Character info menu (c)", characterInfoPosX + characterInfoWidth / 2 - characterInfoMenuText / 2, characterInfoPosY + 5, 20, BLACK);
 		int closeWindowTextSize = MeasureText("x", 25);
-		DrawRectangle(characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7, characterInfoPosY + 5, closeWindowTextSize + 5, 20, MAROON);
-		DrawText("x", characterInfoPosX + characterInfoWidth - closeWindowTextSize - 5, characterInfoPosY + 2, 25, WHITE);
 
 		Vector2 mousePos = GetMousePosition();
 
@@ -499,12 +500,17 @@ void Logic::characterInfoUI()
 			mousePos.y > characterInfoPosY + 5 &&
 			mousePos.y < characterInfoPosY + 5 + 20)
 		{
-			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			DrawRectangle(characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7, characterInfoPosY + 5, closeWindowTextSize + 5, 20, BLACK);
+			DrawText("x", characterInfoPosX + characterInfoWidth - closeWindowTextSize - 5, characterInfoPosY + 2, 25, RED);
 			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 			{
 				isCharacterInfoOpen = false;
-				SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 			}
+		}
+		else
+		{
+			DrawRectangle(characterInfoPosX + characterInfoWidth - closeWindowTextSize - 7, characterInfoPosY + 5, closeWindowTextSize + 5, 20, MAROON);
+			DrawText("x", characterInfoPosX + characterInfoWidth - closeWindowTextSize - 5, characterInfoPosY + 2, 25, WHITE);
 		}
 
 		// stats
@@ -1084,6 +1090,8 @@ void Logic::saveGame()
 		addToSaveGame("currentEnergy", attributes.getCurrentEnergy());
 		addToSaveGame("maxEnergy", attributes.getMaxEnergy());
 		addToSaveGame("talentPoints", attributes.getTalentPoints());
+		addToSaveGame("level", (int)level);
+		addToSaveGame("questState", (int)questState);
 	}
 	outputFile.close();
 
@@ -1242,6 +1250,16 @@ void Logic::loadGame()
 				if (inputData[i] == "talentPoints")
 				{
 					attributes.setTalentPoints(std::stoi(inputData[i + 2]));
+					continue;
+				}
+				if (inputData[i] == "level")
+				{
+					level = (Level)std::stoi(inputData[i + 2]);
+					continue;
+				}
+				if (inputData[i] == "questState")
+				{
+					questState = (QuestState)std::stoi(inputData[i + 2]);
 					continue;
 				}
 			}
