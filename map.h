@@ -15,9 +15,10 @@ public:
 	const int mapHeight = tileRow * tileSize;
 	const int mapTileSize = tileSize;
 
-	void loadMap(int arr[tileRow][tileColumn]);
+	void loadMap(unsigned char arr[tileRow][tileColumn]);
 	void drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction);
+	unsigned char exploredMap[tileRow][tileColumn] = { 0 };
 
 private:
-	int map[tileRow][tileColumn];
+	unsigned char map[tileRow][tileColumn];
 };

@@ -98,6 +98,9 @@ private:
 	int playerFramesX = 0;
 	int playerFramesY = 0;
 	int letterCount = 0;
+	int clearViewSize = 6;
+	int clearGrayViewSize = 8;
+	int grayViewSize = 15;
 	char name[MAX_NAME_CHAR + 1] = "\0";
 	std::string playerName;
 	bool isNameGiven = false;

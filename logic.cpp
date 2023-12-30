@@ -1125,7 +1125,7 @@ void Logic::loadGame()
 				{
 					playerName = inputData[i + 2];
 				}
-				if (inputData[i] == "isNameGiven")
+				else if (inputData[i] == "isNameGiven")
 				{
 					if (std::stoi(inputData[i + 2]) == 1)
 					{
@@ -1136,12 +1136,11 @@ void Logic::loadGame()
 						isNameGiven = false;
 					}
 				}
-				if (inputData[i] == "goldCount")
+				else if (inputData[i] == "goldCount")
 				{
 					inventory.setGoldCount(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "playerLocationX")
+				else if (inputData[i] == "playerLocationX")
 				{
 					for (auto& entities : gameEntities)
 					{
@@ -1152,9 +1151,8 @@ void Logic::loadGame()
 						}
 					}
 					playerLocation.x = std::stof(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "playerLocationY")
+				else if (inputData[i] == "playerLocationY")
 				{
 					for (auto& entities : gameEntities)
 					{
@@ -1165,99 +1163,80 @@ void Logic::loadGame()
 						}
 					}
 					playerLocation.y = std::stof(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "questReturnValue")
+				else if (inputData[i] == "questReturnValue")
 				{
 					questReturnValue = std::stoi(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "playerDirectionX")
+				else if (inputData[i] == "playerDirectionX")
 				{
 					playerDirection.x = std::stof(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "playerDirectionY")
+				else if (inputData[i] == "playerDirectionY")
 				{
 					playerDirection.y = std::stof(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "xpCount")
+				else if (inputData[i] == "xpCount")
 				{
 					attributes.setXPCount(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "playerLevel")
+				else if (inputData[i] == "playerLevel")
 				{
 					attributes.setPlayerLevel(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "levelXP")
+				else if (inputData[i] == "levelXP")
 				{
 					attributes.setLevelXP(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "strenght")
+				else if (inputData[i] == "strenght")
 				{
 					attributes.setStrenght(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "extraStrenght")
+				else if (inputData[i] == "extraStrenght")
 				{
 					attributes.setExtraStrenght(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "agility")
+				else if (inputData[i] == "agility")
 				{
 					attributes.setAgility(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "extraAgility")
+				else if (inputData[i] == "extraAgility")
 				{
 					attributes.setExtraAgility(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "stamina")
+				else if (inputData[i] == "stamina")
 				{
 					attributes.setStamina(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "extraStamina")
+				else if (inputData[i] == "extraStamina")
 				{
 					attributes.setExtraStamina(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "currentHealth")
+				else if (inputData[i] == "currentHealth")
 				{
 					attributes.setCurrentHealth(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "maxHealth")
+				else if (inputData[i] == "maxHealth")
 				{
 					attributes.setMaxHealth(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "currentEnergy")
+				else if (inputData[i] == "currentEnergy")
 				{
 					attributes.setCurrentEnergy(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "maxEnergy")
+				else if (inputData[i] == "maxEnergy")
 				{
 					attributes.setMaxEnergy(std::stof(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "talentPoints")
+				else if (inputData[i] == "talentPoints")
 				{
 					attributes.setTalentPoints(std::stoi(inputData[i + 2]));
-					continue;
 				}
-				if (inputData[i] == "level")
+				else if (inputData[i] == "level")
 				{
 					level = (Level)std::stoi(inputData[i + 2]);
-					continue;
 				}
-				if (inputData[i] == "questState")
+				else if (inputData[i] == "questState")
 				{
 					questState = (QuestState)std::stoi(inputData[i + 2]);
 					continue;
@@ -1447,6 +1426,85 @@ void Logic::Update()
 		double currentTime = GetTime();
 		healthRegenerate(currentTime);
 		energyRegenerate(currentTime);
+
+		for (int i = 0; i < gameEntities.size(); i++)
+		{
+			if (gameEntities[i].getComponent<TagComponent>().tag == "player")
+			{
+
+				int playerLocXGrid = gameEntities[i].getComponent<PositionComponent>().x - (playerDirection.x * tileSize);
+				int playerLocYGrid = gameEntities[i].getComponent<PositionComponent>().y - (playerDirection.y * tileSize);
+
+				for (int i = -(clearViewSize); i < clearViewSize; i++)
+				{
+					for (int j = -(clearViewSize); j < clearViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+							{
+								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+							}
+
+						}
+					}
+				}
+				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
+				{
+					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+							{
+								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+							}
+						}
+					}
+				}
+				for (int i = -(grayViewSize); i < grayViewSize; i++)
+				{
+					for (int j = -(grayViewSize); j < grayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+							{
+								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+							}
+						}
+					}
+				}
+				/*DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 100.f, Color{ 255,255,255,120 });
+				DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 150.f, Color{ 200,200,200,120 });
+				DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 250.f, Color{ 150,150,150,120 });*/
+				break;
+			}
+
+		}
+
+		for (int row = 0; row < tileRow; row++)
+		{
+			for (int column = 0; column < tileColumn; column++)
+			{
+				float posX = (column + playerDirection.x) * tileSize;
+				float posY = (row + playerDirection.y) * tileSize;
+
+				if (map.exploredMap[row][column] == 0)
+				{
+					DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+				}
+				else if (map.exploredMap[row][column] == 2)
+				{
+					DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+				}
+				else if (map.exploredMap[row][column] == 3)
+				{
+					DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+				}
+			}
+
+		}
 
 		characterOverlayUI();
 		playerMovementAndCollisions(deltaTime);
