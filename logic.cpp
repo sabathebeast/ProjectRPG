@@ -235,11 +235,11 @@ void Logic::Render()
 	handleLevels();
 	if (level == Level::level_0)
 	{
-		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection);
+		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection, map.levelZeroExploreMap);
 	}
 	else
 	{
-		map.drawMap(grassTexture, waterTexture, dirtTexture, playerDirection);
+		map.drawMap(grassTexture, waterTexture, dirtTexture, playerDirection, map.levelOneExploreMap);
 		for (auto& entities : gameEntities)
 		{
 			if (entities.getComponent<TagComponent>().tag == "house")
@@ -1377,6 +1377,151 @@ void Logic::energyRegenerate(double currentTime)
 	}
 }
 
+void Logic::addLevelExplore()
+{
+	for (int i = 0; i < gameEntities.size(); i++)
+	{
+		if (gameEntities[i].getComponent<TagComponent>().tag == "player")
+		{
+
+			int playerLocXGrid = static_cast<int>(gameEntities[i].getComponent<PositionComponent>().x - (playerDirection.x * tileSize));
+			int playerLocYGrid = static_cast<int>(gameEntities[i].getComponent<PositionComponent>().y - (playerDirection.y * tileSize));
+
+			if (level == Level::level_0)
+			{
+				for (int i = -(clearViewSize); i < clearViewSize; i++)
+				{
+					for (int j = -(clearViewSize); j < clearViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+							{
+								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+							}
+
+						}
+					}
+				}
+				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
+				{
+					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+							{
+								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+							}
+						}
+					}
+				}
+				for (int i = -(grayViewSize); i < grayViewSize; i++)
+				{
+					for (int j = -(grayViewSize); j < grayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+							{
+								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+							}
+						}
+					}
+				}
+				for (int row = 0; row < tileRow; row++)
+				{
+					for (int column = 0; column < tileColumn; column++)
+					{
+						int posX = static_cast<int>((column + playerDirection.x) * tileSize);
+						int posY = static_cast<int>((row + playerDirection.y) * tileSize);
+
+						if (map.levelZeroExploreMap[row][column] == 0)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+						}
+						else if (map.levelZeroExploreMap[row][column] == 2)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+						}
+						else if (map.levelZeroExploreMap[row][column] == 3)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+						}
+					}
+
+				}
+			}
+			else if (level == Level::level_1)
+			{
+				for (int i = -(clearViewSize); i < clearViewSize; i++)
+				{
+					for (int j = -(clearViewSize); j < clearViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+							{
+								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+							}
+
+						}
+					}
+				}
+				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
+				{
+					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+							{
+								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+							}
+						}
+					}
+				}
+				for (int i = -(grayViewSize); i < grayViewSize; i++)
+				{
+					for (int j = -(grayViewSize); j < grayViewSize; j++)
+					{
+						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+						{
+							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+							{
+								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+							}
+						}
+					}
+				}
+				for (int row = 0; row < tileRow; row++)
+				{
+					for (int column = 0; column < tileColumn; column++)
+					{
+						int posX = static_cast<int>((column + playerDirection.x) * tileSize);
+						int posY = static_cast<int>((row + playerDirection.y) * tileSize);
+
+						if (map.levelOneExploreMap[row][column] == 0)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+						}
+						else if (map.levelOneExploreMap[row][column] == 2)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+						}
+						else if (map.levelOneExploreMap[row][column] == 3)
+						{
+							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+						}
+					}
+
+				}
+			}
+			break;
+		}
+	}
+}
+
 void Logic::Update()
 {
 	if (!isNameGiven)
@@ -1426,86 +1571,7 @@ void Logic::Update()
 		double currentTime = GetTime();
 		healthRegenerate(currentTime);
 		energyRegenerate(currentTime);
-
-		for (int i = 0; i < gameEntities.size(); i++)
-		{
-			if (gameEntities[i].getComponent<TagComponent>().tag == "player")
-			{
-
-				int playerLocXGrid = gameEntities[i].getComponent<PositionComponent>().x - (playerDirection.x * tileSize);
-				int playerLocYGrid = gameEntities[i].getComponent<PositionComponent>().y - (playerDirection.y * tileSize);
-
-				for (int i = -(clearViewSize); i < clearViewSize; i++)
-				{
-					for (int j = -(clearViewSize); j < clearViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
-							{
-								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
-							}
-
-						}
-					}
-				}
-				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
-				{
-					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
-							{
-								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
-							}
-						}
-					}
-				}
-				for (int i = -(grayViewSize); i < grayViewSize; i++)
-				{
-					for (int j = -(grayViewSize); j < grayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
-							{
-								map.exploredMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
-							}
-						}
-					}
-				}
-				/*DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 100.f, Color{ 255,255,255,120 });
-				DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 150.f, Color{ 200,200,200,120 });
-				DrawCircle(gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y, 250.f, Color{ 150,150,150,120 });*/
-				break;
-			}
-
-		}
-
-		for (int row = 0; row < tileRow; row++)
-		{
-			for (int column = 0; column < tileColumn; column++)
-			{
-				float posX = (column + playerDirection.x) * tileSize;
-				float posY = (row + playerDirection.y) * tileSize;
-
-				if (map.exploredMap[row][column] == 0)
-				{
-					DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
-				}
-				else if (map.exploredMap[row][column] == 2)
-				{
-					DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
-				}
-				else if (map.exploredMap[row][column] == 3)
-				{
-					DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
-				}
-			}
-
-		}
-
+		addLevelExplore();
 		characterOverlayUI();
 		playerMovementAndCollisions(deltaTime);
 		showQuest();

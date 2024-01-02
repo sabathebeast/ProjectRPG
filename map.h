@@ -16,9 +16,9 @@ public:
 	const int mapTileSize = tileSize;
 
 	void loadMap(unsigned char arr[tileRow][tileColumn]);
-	void drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction);
-	unsigned char exploredMap[tileRow][tileColumn] = { 0 };
-
+	void drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction, unsigned char levelExploreMap[tileRow][tileColumn]);
+	unsigned char levelZeroExploreMap[tileRow][tileColumn] = { 0 };
+	unsigned char levelOneExploreMap[tileRow][tileColumn] = { 0 };
 private:
 	unsigned char map[tileRow][tileColumn];
 };

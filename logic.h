@@ -64,6 +64,7 @@ private:
 	void setStats();
 	void healthRegenerate(double currentTime);
 	void energyRegenerate(double currentTime);
+	void addLevelExplore();
 	bool isEnergyRegenerateTimerStarted = true;
 	double energyRegenerateTime = 0.0;
 	bool isHealthRegenerateTimerStarted = true;

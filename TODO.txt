@@ -1,4 +1,3 @@
--add world explore / darkening
 -add a ... textbox to the npc when it has a quest
 -add more quests/npcs
 -add enemy

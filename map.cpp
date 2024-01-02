@@ -94,7 +94,7 @@ void Map::loadMap(unsigned char arr[tileRow][tileColumn])
 	}
 }
 
-void Map::drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction)
+void Map::drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction, unsigned char levelExploreMap[tileRow][tileColumn])
 {
 	for (int row = 0; row < tileRow; row++)
 	{
@@ -103,15 +103,15 @@ void Map::drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction)
 			float posX = (column + direction.x) * tileSize;
 			float posY = (row + direction.y) * tileSize;
 
-			if (map[row][column] == 0 && exploredMap[row][column] > 0)
+			if (map[row][column] == 0 && levelExploreMap[row][column] > 0)
 			{
 				DrawTextureEx(tex0, { posX, posY }, 0.f, 1.f, WHITE);
 			}
-			else if (map[row][column] == 1 && exploredMap[row][column] > 0)
+			else if (map[row][column] == 1 && levelExploreMap[row][column] > 0)
 			{
 				DrawTextureEx(tex1, { posX, posY }, 0.f, 1.f, WHITE);
 			}
-			else if (map[row][column] == 2 && exploredMap[row][column] > 0)
+			else if (map[row][column] == 2 && levelExploreMap[row][column] > 0)
 			{
 				DrawTextureEx(tex2, { posX, posY }, 0.f, 1.f, WHITE);
 			}
