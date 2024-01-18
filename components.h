@@ -25,3 +25,8 @@ struct Sprite2DComponent
 	int currentFrame, frameCount, frameSpeed, framesX, framesY;
 	float sourceX, sourceY;
 };
+
+struct ActiveComponent
+{
+	bool isActive = true;
+};

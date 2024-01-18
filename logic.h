@@ -80,7 +80,7 @@ private:
 	Texture waterTexture;
 	Texture grassTexture;
 	Texture houseTexture;
-	std::vector<Entity> gameEntities;
+	//std::vector<Entity> gameEntities;
 	std::vector<Texture> gameTextures;
 	std::vector<Sound> gameSounds;
 	float playerSpeed = 0.f;

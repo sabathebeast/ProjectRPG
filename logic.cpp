@@ -51,7 +51,8 @@ void Logic::createBasicGameEntity(Scene& scene, float posX, float posY, Texture 
 	Entity gameEntity = scene.createEntity(tag);
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<TextureComponent>(texture);
-	gameEntities.emplace_back(gameEntity);
+	gameEntity.addComponent<ActiveComponent>();
+	//gameEntities.emplace_back(gameEntity);
 }
 
 void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag)
@@ -59,7 +60,8 @@ void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Textu
 	Entity gameEntity = scene.createEntity(tag);
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<Sprite2DComponent>(texture, currentFrame, frameCount, frameSpeed, framesX, framesY, sourceX, sourceY);
-	gameEntities.emplace_back(gameEntity);
+	gameEntity.addComponent<ActiveComponent>();
+	//gameEntities.emplace_back(gameEntity);
 }
 
 void Logic::createAllGameEntity()
@@ -170,9 +172,8 @@ void Logic::initializeAllSound()
 
 void Logic::drawObject()
 {
-	for (auto& entities : gameEntities)
-	{
-		if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
+	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const ActiveComponent>();
+	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const ActiveComponent& active)
 		{
 			float xScrollingOffset = 0.f;
 			float yScrollingOffset = 0.f;
@@ -193,24 +194,92 @@ void Logic::drawObject()
 			{
 				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
 			}
-			DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x + xScrollingOffset), static_cast<int>(entities.getComponent<PositionComponent>().y + yScrollingOffset), WHITE);
-		}
-		else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
+			if (active.isActive)
+			{
+				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+			}
+		});
+
+	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this](const TagComponent& tag, const PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
-			DrawTexturePro(entities.getComponent<Sprite2DComponent>().texture,
-				Rectangle{ entities.getComponent<Sprite2DComponent>().sourceX,
-							entities.getComponent<Sprite2DComponent>().sourceY,
-							static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
-							static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
-				Rectangle{ entities.getComponent<PositionComponent>().x,
-						entities.getComponent<PositionComponent>().y,
-						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
-						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
-				{ static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX / 2), static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY / 2) },
-				0.f,
-				WHITE);
-		}
-	}
+			float xScrollingOffset = 0.f;
+			float yScrollingOffset = 0.f;
+
+			if (playerDirection.x >= 0.f)
+			{
+				xScrollingOffset = playerDirection.x * map.mapTileSize;
+			}
+			else
+			{
+				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+			}
+			if (playerDirection.y >= 0.f)
+			{
+				yScrollingOffset = playerDirection.y * map.mapTileSize;
+			}
+			else
+			{
+				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+			}
+			if (active.isActive)
+			{
+				DrawTexturePro(sprite.texture,
+					Rectangle{ sprite.sourceX,
+								sprite.sourceY,
+								static_cast<float>(sprite.texture.width / sprite.framesX),
+								static_cast<float>(sprite.texture.height / sprite.framesY) },
+					Rectangle{ position.x,
+							position.y,
+							static_cast<float>(sprite.texture.width / sprite.framesX),
+							static_cast<float>(sprite.texture.height / sprite.framesY) },
+					{ static_cast<float>(sprite.texture.width / sprite.framesX / 2), static_cast<float>(sprite.texture.height / sprite.framesY / 2) },
+					0.f,
+					WHITE);
+			}
+		});
+
+	//for (auto& entities : gameEntities)
+	//{
+	//	if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
+	//	{
+	//		float xScrollingOffset = 0.f;
+	//		float yScrollingOffset = 0.f;
+
+	//		if (playerDirection.x >= 0.f)
+	//		{
+	//			xScrollingOffset = playerDirection.x * map.mapTileSize;
+	//		}
+	//		else
+	//		{
+	//			xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+	//		}
+	//		if (playerDirection.y >= 0.f)
+	//		{
+	//			yScrollingOffset = playerDirection.y * map.mapTileSize;
+	//		}
+	//		else
+	//		{
+	//			yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+	//		}
+	//		DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x + xScrollingOffset), static_cast<int>(entities.getComponent<PositionComponent>().y + yScrollingOffset), WHITE);
+	//	}
+	//	else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
+	//	{
+	//		DrawTexturePro(entities.getComponent<Sprite2DComponent>().texture,
+	//			Rectangle{ entities.getComponent<Sprite2DComponent>().sourceX,
+	//						entities.getComponent<Sprite2DComponent>().sourceY,
+	//						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
+	//						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
+	//			Rectangle{ entities.getComponent<PositionComponent>().x,
+	//					entities.getComponent<PositionComponent>().y,
+	//					static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
+	//					static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
+	//			{ static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX / 2), static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY / 2) },
+	//			0.f,
+	//			WHITE);
+	//	}
+	//}
 }
 
 void Logic::playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multiplyer, int i)
@@ -240,7 +309,49 @@ void Logic::Render()
 	else
 	{
 		map.drawMap(grassTexture, waterTexture, dirtTexture, playerDirection, map.levelOneExploreMap);
-		for (auto& entities : gameEntities)
+
+		entt::basic_view view = scene.registry.view<const TagComponent, PositionComponent, TextureComponent>();
+		view.each([this](const TagComponent tag, PositionComponent position, TextureComponent texture)
+			{
+				if (tag.tag == "house")
+				{
+					float xScrollingOffset = 0.f;
+					float yScrollingOffset = 0.f;
+
+					if (playerDirection.x >= 0.f)
+					{
+						xScrollingOffset = playerDirection.x * map.mapTileSize;
+					}
+					else
+					{
+						xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+					}
+					if (playerDirection.y >= 0.f)
+					{
+						yScrollingOffset = playerDirection.y * map.mapTileSize;
+					}
+					else
+					{
+						yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+					}
+
+					position.x = 50.f;
+					position.y = windowHeight - 100.f;
+
+					if (CheckCollisionRecs({ position.x + xScrollingOffset,
+											position.y + yScrollingOffset,
+						static_cast<float>(texture.texture.width),
+						static_cast<float>(texture.texture.height) },
+						{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{
+						level = Level::level_0;
+						position.x = windowWidth - 100.f;
+						position.y = 50.f;
+					}
+				}
+			});
+
+		/*for (auto& entities : gameEntities)
 		{
 			if (entities.getComponent<TagComponent>().tag == "house")
 			{
@@ -283,7 +394,7 @@ void Logic::Render()
 					entities.getComponent<PositionComponent>().y = 50.f;
 				}
 			}
-		}
+		}*/
 	}
 	drawObject();
 }
@@ -757,7 +868,266 @@ void Logic::handleOpenCloseCharacterInfo()
 
 void Logic::playerMovementAndCollisions(float deltaTime)
 {
-	for (int i = 0; i < gameEntities.size(); i++)
+	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+		{
+			float xScrollingOffset = 0.f;
+			float yScrollingOffset = 0.f;
+
+			if (playerDirection.x >= 0.f)
+			{
+				xScrollingOffset = playerDirection.x * map.mapTileSize;
+			}
+			else
+			{
+				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+			}
+			if (playerDirection.y >= 0.f)
+			{
+				yScrollingOffset = playerDirection.y * map.mapTileSize;
+			}
+			else
+			{
+				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+			}
+
+			mapScrollingSpeed = playerSpeed / 20;
+
+			if (tag.tag == "player")
+			{
+				if (IsKeyDown(KEY_W))
+				{
+					//playPlayerAnimation(gameEntities, 3, i);
+					if (position.y - GetScreenHeight() / 2.f - (playerDirection.y) >= 0.f && position.y <= GetScreenHeight() / 2.f)
+					{
+						playerDirection.y += mapScrollingSpeed * deltaTime;
+					}
+					else
+					{
+						if (position.y <= GetScreenHeight() / 2.f)
+						{
+							playerDirection.y = 0.f;
+						}
+						position.y -= playerSpeed * deltaTime;
+						if (position.y - static_cast<float>(sprite.texture.height) / playerFramesY / 2 <= 0)
+						{
+							position.y = 0.f + static_cast<float>(sprite.texture.height) / playerFramesY / 2;
+						}
+					}
+				}
+				if (IsKeyDown(KEY_S))
+				{
+					//playPlayerAnimation(gameEntities, 0, i);
+
+					if (position.y + GetScreenHeight() / 2.f + (playerDirection.y * -1) <= map.mapHeight - 90 && position.y >= GetScreenHeight() / 2.f)
+					{
+						playerDirection.y -= mapScrollingSpeed * deltaTime;
+					}
+					else
+					{
+						position.y += playerSpeed * deltaTime;
+						if (position.y + static_cast<float>(sprite.texture.height) / playerFramesY / 2 > windowHeight)
+						{
+							position.y = static_cast<float>(windowHeight - sprite.texture.height / playerFramesY / 2);
+						}
+					}
+				}
+				if (IsKeyDown(KEY_A))
+				{
+					//playPlayerAnimation(gameEntities, 1, i);
+
+					if (position.x - GetScreenWidth() / 2.f - playerDirection.x >= 0.f && position.x <= GetScreenWidth() / 2.f)
+					{
+						playerDirection.x += mapScrollingSpeed * deltaTime;
+					}
+					else
+					{
+						if (position.x <= GetScreenWidth() / 2.f)
+						{
+							playerDirection.x = 0.f;
+						}
+						position.x -= playerSpeed * deltaTime;
+						if (position.x - static_cast<float>(sprite.texture.width) / playerFramesX / 2 <= 0.f)
+						{
+							position.x = 0.f + static_cast<float>(sprite.texture.width) / playerFramesX / 2;
+						}
+					}
+				}
+				if (IsKeyDown(KEY_D))
+				{
+					//playPlayerAnimation(gameEntities, 2, i);
+
+					if (position.x + GetScreenWidth() / 2.f + (playerDirection.x * -1) <= map.mapWidth - 90 && position.x >= GetScreenWidth() / 2.f)
+					{
+						playerDirection.x -= mapScrollingSpeed * deltaTime;
+					}
+					else
+					{
+						position.x += playerSpeed * deltaTime;
+						if (position.x + static_cast<float>(sprite.texture.width) / playerFramesX / 2 >= windowWidth)
+						{
+							position.x = static_cast<float>(windowWidth - sprite.texture.width / playerFramesX / 2);
+						}
+					}
+				}
+				playerLocation = { position.x, position.y };
+			}});
+
+	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
+	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+		{
+			float xScrollingOffset = 0.f;
+			float yScrollingOffset = 0.f;
+
+			if (playerDirection.x >= 0.f)
+			{
+				xScrollingOffset = playerDirection.x * map.mapTileSize;
+			}
+			else
+			{
+				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+			}
+			if (playerDirection.y >= 0.f)
+			{
+				yScrollingOffset = playerDirection.y * map.mapTileSize;
+			}
+			else
+			{
+				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+			}
+
+			if (tag.tag == "vendor"
+				&& active.isActive
+				&& questReturnValue < 6
+				&& CheckCollisionRecs({ position.x + xScrollingOffset,
+										position.y + yScrollingOffset,
+					static_cast<float>(texture.texture.width),
+					static_cast<float>(texture.texture.height) },
+					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+			{
+				if (questReturnValue == 1)
+				{
+					PlaySound(questDoneSound);
+					inventory.addGold(5);
+					questReturnValue = 6;
+					questState = QuestState::Done;
+					inventory.removeOrDecreaseItems("woodStash", 10);
+					attributes.addToXPCount(6000);
+
+				}
+				else if (questReturnValue == 2)
+				{
+					questState = QuestState::None;
+					questReturnValue = 6;
+				}
+				else if (questReturnValue == 4)
+				{
+					for (auto& items : inventory.getItems())
+					{
+						if (items.id == "woodStash")
+						{
+							if (items.quantity >= 10)
+							{
+								questReturnValue = 0;
+							}
+						}
+					}
+				}
+				else if (questReturnValue == 5)
+				{
+					PlaySound(questAcceptedSound);
+					questState = QuestState::Accepted;
+					questReturnValue = 4;
+				}
+				else
+				{
+					questReturnValue = dialogue.performDialogue(static_cast<int>(position.x), static_cast<int>(position.y));
+				}
+			}
+			else if (tag.tag == "woodStash"
+				&& active.isActive
+				&& CheckCollisionRecs({ position.x + xScrollingOffset,
+										position.y + yScrollingOffset,
+					static_cast<float>(texture.texture.width),
+					static_cast<float>(texture.texture.height) },
+					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+			{
+				Item woodStash;
+				woodStash.id = "woodStash";
+				woodStash.isStackable = true;
+				woodStash.itemType = ItemType::Collectible;
+				woodStash.quantity = 1;
+				woodStash.stackSize = 10;
+				woodStash.texture = texture.texture;
+				inventory.addItem(woodStash);
+				active.isActive = false;
+
+				/*if (inventory.canAddItems == true)
+				{
+					gameEntities.erase(gameEntities.begin() + i);
+				}*/
+			}
+
+			else if (tag.tag == "fish"
+				&& active.isActive
+				&& CheckCollisionRecs({ position.x + xScrollingOffset,
+										position.y + yScrollingOffset,
+					static_cast<float>(texture.texture.width),
+					static_cast<float>(texture.texture.height) },
+					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+			{
+				Item fish;
+				fish.id = "fish";
+				fish.isStackable = true;
+				fish.itemType = ItemType::Food;
+				fish.quantity = 1;
+				fish.stackSize = 10;
+				fish.texture = texture.texture;
+				inventory.addItem(fish);
+				active.isActive = false;
+
+				/*if (inventory.canAddItems == true)
+				{
+					gameEntities.erase(gameEntities.begin() + i);
+				}*/
+			}
+
+			else if (tag.tag == "barrel"
+				&& active.isActive
+				&& CheckCollisionRecs({ position.x + xScrollingOffset,
+										position.y + yScrollingOffset,
+					static_cast<float>(texture.texture.width),
+					static_cast<float>(texture.texture.height) },
+					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+			{
+				Item barrel;
+				barrel.id = "barrel";
+				barrel.isStackable = true;
+				barrel.itemType = ItemType::Collectible;
+				barrel.quantity = 1;
+				barrel.stackSize = 10;
+				barrel.texture = texture.texture;
+				inventory.addItem(barrel);
+
+				/*if (inventory.canAddItems == true)
+				{
+					gameEntities.erase(gameEntities.begin() + i);
+				}*/
+			}
+			else if (tag.tag == "house"
+				&& active.isActive
+				&& CheckCollisionRecs({ position.x + xScrollingOffset,
+										position.y + yScrollingOffset,
+					static_cast<float>(texture.texture.width),
+					static_cast<float>(texture.texture.height) },
+					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+			{
+				active.isActive = false;
+				level = Level::level_1;
+			}});
+
+
+	/*for (int i = 0; i < gameEntities.size(); i++)
 	{
 		float xScrollingOffset = 0.f;
 		float yScrollingOffset = 0.f;
@@ -998,24 +1368,83 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			gameEntities[i].isActive = false;
 			level = Level::level_1;
 		}
-	}
+	}*/
 }
 
 void Logic::getPlayerFramesXY()
 {
-	for (auto& entities : gameEntities)
+	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this](const TagComponent& tag, const PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+		{
+			if (tag.tag == "player")
+			{
+				playerFramesX = sprite.framesX;
+				playerFramesY = sprite.framesY;
+			}
+		});
+
+	/*for (auto& entities : gameEntities)
 	{
 		if (entities.hasComponent<Sprite2DComponent>() && entities.getComponent<TagComponent>().tag == "player")
 		{
 			playerFramesX = entities.getComponent<Sprite2DComponent>().framesX;
 			playerFramesY = entities.getComponent<Sprite2DComponent>().framesY;
 		}
-	}
+	}*/
 }
 
 void Logic::handleLevels()
 {
-	if (level == Level::level_0)
+	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
+	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+		{
+			if (level == Level::level_0)
+			{
+				if (tag.tag == "barrel")
+				{
+					active.isActive = false;
+				}
+				if (tag.tag == "woodStash")
+				{
+					active.isActive = false;
+				}
+				if (tag.tag == "fish")
+				{
+					active.isActive = false;
+				}
+				if (tag.tag == "house")
+				{
+					active.isActive = true;
+				}
+				if (tag.tag == "vendor")
+				{
+					active.isActive = true;
+				}
+			}
+			else if (level == Level::level_1)
+			{
+				if (tag.tag == "barrel")
+				{
+					active.isActive = true;
+				}
+				if (tag.tag == "woodStash")
+				{
+					active.isActive = true;
+				}
+				if (tag.tag == "fish")
+				{
+					active.isActive = true;
+				}
+				if (tag.tag == "vendor")
+				{
+					active.isActive = false;
+				}
+			}
+
+		});
+
+
+	/*if (level == Level::level_0)
 	{
 		for (auto& entities : gameEntities)
 		{
@@ -1062,7 +1491,7 @@ void Logic::handleLevels()
 				entities.isActive = false;
 			}
 		}
-	}
+	}*/
 }
 
 void Logic::saveGame()
@@ -1144,26 +1573,43 @@ void Logic::loadGame()
 				}
 				else if (inputData[i] == "playerLocationX")
 				{
-					for (auto& entities : gameEntities)
+
+					entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+					playerView.each([this, &i](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+						{
+							if (tag.tag == "player")
+							{
+								position.x = std::stof(inputData[i + 2]);
+							}
+						});
+					/*for (auto& entities : gameEntities)
 					{
 						if (entities.getComponent<TagComponent>().tag == "player")
 						{
 							entities.getComponent<PositionComponent>().x = std::stof(inputData[i + 2]);
 							break;
 						}
-					}
+					}*/
 					playerLocation.x = std::stof(inputData[i + 2]);
 				}
 				else if (inputData[i] == "playerLocationY")
 				{
-					for (auto& entities : gameEntities)
+					entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+					playerView.each([this, &i](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+						{
+							if (tag.tag == "player")
+							{
+								position.y = std::stof(inputData[i + 2]);
+							}
+						});
+					/*for (auto& entities : gameEntities)
 					{
 						if (entities.getComponent<TagComponent>().tag == "player")
 						{
 							entities.getComponent<PositionComponent>().y = std::stof(inputData[i + 2]);
 							break;
 						}
-					}
+					}*/
 					playerLocation.y = std::stof(inputData[i + 2]);
 				}
 				else if (inputData[i] == "questReturnValue")
@@ -1381,7 +1827,148 @@ void Logic::energyRegenerate(double currentTime)
 
 void Logic::addLevelExplore()
 {
-	for (int i = 0; i < gameEntities.size(); i++)
+	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this](const TagComponent& tag, const PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+		{
+			if (tag.tag == "player")
+			{
+				int playerLocXGrid = static_cast<int>(position.x - (playerDirection.x * tileSize));
+				int playerLocYGrid = static_cast<int>(position.y - (playerDirection.y * tileSize));
+
+				if (level == Level::level_0)
+				{
+					for (int i = -(clearViewSize); i < clearViewSize; i++)
+					{
+						for (int j = -(clearViewSize); j < clearViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+								{
+									map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+								}
+
+							}
+						}
+					}
+					for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
+					{
+						for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+								{
+									map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+								}
+							}
+						}
+					}
+					for (int i = -(grayViewSize); i < grayViewSize; i++)
+					{
+						for (int j = -(grayViewSize); j < grayViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+								{
+									map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+								}
+							}
+						}
+					}
+					for (int row = 0; row < tileRow; row++)
+					{
+						for (int column = 0; column < tileColumn; column++)
+						{
+							int posX = static_cast<int>((column + playerDirection.x) * tileSize);
+							int posY = static_cast<int>((row + playerDirection.y) * tileSize);
+
+							if (map.levelZeroExploreMap[row][column] == 0)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+							}
+							else if (map.levelZeroExploreMap[row][column] == 2)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+							}
+							else if (map.levelZeroExploreMap[row][column] == 3)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+							}
+						}
+
+					}
+				}
+				else if (level == Level::level_1)
+				{
+					for (int i = -(clearViewSize); i < clearViewSize; i++)
+					{
+						for (int j = -(clearViewSize); j < clearViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+								{
+									map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+								}
+
+							}
+						}
+					}
+					for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
+					{
+						for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+								{
+									map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+								}
+							}
+						}
+					}
+					for (int i = -(grayViewSize); i < grayViewSize; i++)
+					{
+						for (int j = -(grayViewSize); j < grayViewSize; j++)
+						{
+							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							{
+								if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+								{
+									map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+								}
+							}
+						}
+					}
+					for (int row = 0; row < tileRow; row++)
+					{
+						for (int column = 0; column < tileColumn; column++)
+						{
+							int posX = static_cast<int>((column + playerDirection.x) * tileSize);
+							int posY = static_cast<int>((row + playerDirection.y) * tileSize);
+
+							if (map.levelOneExploreMap[row][column] == 0)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+							}
+							else if (map.levelOneExploreMap[row][column] == 2)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+							}
+							else if (map.levelOneExploreMap[row][column] == 3)
+							{
+								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+							}
+						}
+
+					}
+				}
+			}
+		});
+
+	/*for (int i = 0; i < gameEntities.size(); i++)
 	{
 		if (gameEntities[i].getComponent<TagComponent>().tag == "player")
 		{
@@ -1521,7 +2108,7 @@ void Logic::addLevelExplore()
 			}
 			break;
 		}
-	}
+	}*/
 }
 
 void Logic::Update()

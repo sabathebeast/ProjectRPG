@@ -11,7 +11,7 @@ enum class ItemType : unsigned char
 class Item
 {
 public:
-	const char* id;
+	const char* id = 0;
 	bool isStackable = false;
 	int stackSize = 0;
 	int quantity = 0;

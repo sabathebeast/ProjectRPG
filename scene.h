@@ -12,7 +12,7 @@ public:
 	~Scene();
 
 	Entity createEntity(std::string tag);
+	entt::registry registry;
 
 private:
-	entt::registry registry;
 };

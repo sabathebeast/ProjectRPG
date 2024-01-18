@@ -35,7 +35,6 @@ public:
 	{
 		return scene->registry.all_of<T>(entityHandle);
 	}
-	bool isActive = true;
 
 private:
 	entt::entity entityHandle = entt::entity(0);
