@@ -13,6 +13,6 @@ public:
 
 	Entity createEntity(std::string tag);
 	entt::registry registry;
-
+	
 private:
 };

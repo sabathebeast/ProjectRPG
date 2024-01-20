@@ -974,7 +974,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			}});
 
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
-	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+	view.each([this](const auto entity, const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
 		{
 			float xScrollingOffset = 0.f;
 			float yScrollingOffset = 0.f;
@@ -1060,12 +1060,10 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				woodStash.stackSize = 10;
 				woodStash.texture = texture.texture;
 				inventory.addItem(woodStash);
-				active.isActive = false;
-
-				/*if (inventory.canAddItems == true)
+				if (inventory.canAddItems == true)
 				{
-					gameEntities.erase(gameEntities.begin() + i);
-				}*/
+					scene.registry.remove<ActiveComponent>(entity);
+				}
 			}
 
 			else if (tag.tag == "fish"
@@ -1084,12 +1082,10 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				fish.stackSize = 10;
 				fish.texture = texture.texture;
 				inventory.addItem(fish);
-				active.isActive = false;
-
-				/*if (inventory.canAddItems == true)
+				if (inventory.canAddItems == true)
 				{
-					gameEntities.erase(gameEntities.begin() + i);
-				}*/
+					scene.registry.remove<ActiveComponent>(entity);
+				}
 			}
 
 			else if (tag.tag == "barrel"
@@ -1109,10 +1105,10 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				barrel.texture = texture.texture;
 				inventory.addItem(barrel);
 
-				/*if (inventory.canAddItems == true)
+				if (inventory.canAddItems == true)
 				{
-					gameEntities.erase(gameEntities.begin() + i);
-				}*/
+					scene.registry.remove<ActiveComponent>(entity);
+				}
 			}
 			else if (tag.tag == "house"
 				&& active.isActive
@@ -1122,7 +1118,6 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 					static_cast<float>(texture.texture.height) },
 					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
 			{
-				active.isActive = false;
 				level = Level::level_1;
 			}});
 
