@@ -1062,7 +1062,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				inventory.addItem(woodStash);
 				if (inventory.canAddItems == true)
 				{
-					scene.registry.remove<ActiveComponent>(entity);
+					scene.registry.destroy(entity);
 				}
 			}
 
@@ -1084,7 +1084,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				inventory.addItem(fish);
 				if (inventory.canAddItems == true)
 				{
-					scene.registry.remove<ActiveComponent>(entity);
+					scene.registry.destroy(entity);
 				}
 			}
 
@@ -1107,7 +1107,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 
 				if (inventory.canAddItems == true)
 				{
-					scene.registry.remove<ActiveComponent>(entity);
+					scene.registry.destroy(entity);
 				}
 			}
 			else if (tag.tag == "house"
