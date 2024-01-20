@@ -52,7 +52,6 @@ void Logic::createBasicGameEntity(Scene& scene, float posX, float posY, Texture 
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<TextureComponent>(texture);
 	gameEntity.addComponent<ActiveComponent>();
-	//gameEntities.emplace_back(gameEntity);
 }
 
 void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag)
@@ -61,7 +60,6 @@ void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Textu
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<Sprite2DComponent>(texture, currentFrame, frameCount, frameSpeed, framesX, framesY, sourceX, sourceY);
 	gameEntity.addComponent<ActiveComponent>();
-	//gameEntities.emplace_back(gameEntity);
 }
 
 void Logic::createAllGameEntity()
@@ -175,55 +173,12 @@ void Logic::drawObject()
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const ActiveComponent>();
 	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const ActiveComponent& active)
 		{
-			float xScrollingOffset = 0.f;
-			float yScrollingOffset = 0.f;
-
-			if (playerDirection.x >= 0.f)
-			{
-				xScrollingOffset = playerDirection.x * map.mapTileSize;
-			}
-			else
-			{
-				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-			}
-			if (playerDirection.y >= 0.f)
-			{
-				yScrollingOffset = playerDirection.y * map.mapTileSize;
-			}
-			else
-			{
-				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-			}
-			if (active.isActive)
-			{
 				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
-			}
 		});
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this](const TagComponent& tag, const PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
-			float xScrollingOffset = 0.f;
-			float yScrollingOffset = 0.f;
-
-			if (playerDirection.x >= 0.f)
-			{
-				xScrollingOffset = playerDirection.x * map.mapTileSize;
-			}
-			else
-			{
-				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-			}
-			if (playerDirection.y >= 0.f)
-			{
-				yScrollingOffset = playerDirection.y * map.mapTileSize;
-			}
-			else
-			{
-				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-			}
-			if (active.isActive)
-			{
 				DrawTexturePro(sprite.texture,
 					Rectangle{ sprite.sourceX,
 								sprite.sourceY,
@@ -236,7 +191,6 @@ void Logic::drawObject()
 					{ static_cast<float>(sprite.texture.width / sprite.framesX / 2), static_cast<float>(sprite.texture.height / sprite.framesY / 2) },
 					0.f,
 					WHITE);
-			}
 		});
 }
 
@@ -259,6 +213,26 @@ void Logic::playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplye
 
 void Logic::Render()
 {
+	xScrollingOffset = 0.f;
+	yScrollingOffset = 0.f;
+
+	if (playerDirection.x >= 0.f)
+	{
+		xScrollingOffset = playerDirection.x * map.mapTileSize;
+	}
+	else
+	{
+		xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+	}
+	if (playerDirection.y >= 0.f)
+	{
+		yScrollingOffset = playerDirection.y * map.mapTileSize;
+	}
+	else
+	{
+		yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+	}
+
 	handleLevels();
 	if (level == Level::level_0)
 	{
@@ -273,26 +247,6 @@ void Logic::Render()
 			{
 				if (tag.tag == "house")
 				{
-					float xScrollingOffset = 0.f;
-					float yScrollingOffset = 0.f;
-
-					if (playerDirection.x >= 0.f)
-					{
-						xScrollingOffset = playerDirection.x * map.mapTileSize;
-					}
-					else
-					{
-						xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-					}
-					if (playerDirection.y >= 0.f)
-					{
-						yScrollingOffset = playerDirection.y * map.mapTileSize;
-					}
-					else
-					{
-						yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-					}
-
 					position.x = 50.f;
 					position.y = windowHeight - 100.f;
 
@@ -784,26 +738,6 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
-			float xScrollingOffset = 0.f;
-			float yScrollingOffset = 0.f;
-
-			if (playerDirection.x >= 0.f)
-			{
-				xScrollingOffset = playerDirection.x * map.mapTileSize;
-			}
-			else
-			{
-				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-			}
-			if (playerDirection.y >= 0.f)
-			{
-				yScrollingOffset = playerDirection.y * map.mapTileSize;
-			}
-			else
-			{
-				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-			}
-
 			mapScrollingSpeed = playerSpeed / 20;
 
 			if (tag.tag == "player")
@@ -890,26 +824,6 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
 	view.each([this](const entt::entity entity, const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
 		{
-			float xScrollingOffset = 0.f;
-			float yScrollingOffset = 0.f;
-
-			if (playerDirection.x >= 0.f)
-			{
-				xScrollingOffset = playerDirection.x * map.mapTileSize;
-			}
-			else
-			{
-				xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-			}
-			if (playerDirection.y >= 0.f)
-			{
-				yScrollingOffset = playerDirection.y * map.mapTileSize;
-			}
-			else
-			{
-				yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-			}
-
 			if (tag.tag == "vendor"
 				&& active.isActive
 				&& questReturnValue < 6

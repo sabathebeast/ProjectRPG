@@ -1,3 +1,2 @@
 barrel : 1 10 10 1
 fish : 1 10 10 0
-woodStash : 1 10 10 1

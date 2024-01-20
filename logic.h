@@ -112,6 +112,8 @@ private:
 	std::ofstream outputFile;
 	std::ifstream inputFile;
 	std::vector<std::string> inputData;
+	float xScrollingOffset = 0.f;
+	float yScrollingOffset = 0.f;
 
 	template <typename T>
 	void addToSaveGame(const char* name, T arg)
