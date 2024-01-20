@@ -238,64 +238,22 @@ void Logic::drawObject()
 					WHITE);
 			}
 		});
-
-	//for (auto& entities : gameEntities)
-	//{
-	//	if (entities.hasComponent<TextureComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
-	//	{
-	//		float xScrollingOffset = 0.f;
-	//		float yScrollingOffset = 0.f;
-
-	//		if (playerDirection.x >= 0.f)
-	//		{
-	//			xScrollingOffset = playerDirection.x * map.mapTileSize;
-	//		}
-	//		else
-	//		{
-	//			xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-	//		}
-	//		if (playerDirection.y >= 0.f)
-	//		{
-	//			yScrollingOffset = playerDirection.y * map.mapTileSize;
-	//		}
-	//		else
-	//		{
-	//			yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-	//		}
-	//		DrawTexture(entities.getComponent<TextureComponent>().texture, static_cast<int>(entities.getComponent<PositionComponent>().x + xScrollingOffset), static_cast<int>(entities.getComponent<PositionComponent>().y + yScrollingOffset), WHITE);
-	//	}
-	//	else if (entities.hasComponent<Sprite2DComponent>() && entities.hasComponent<PositionComponent>() && entities.isActive)
-	//	{
-	//		DrawTexturePro(entities.getComponent<Sprite2DComponent>().texture,
-	//			Rectangle{ entities.getComponent<Sprite2DComponent>().sourceX,
-	//						entities.getComponent<Sprite2DComponent>().sourceY,
-	//						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
-	//						static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
-	//			Rectangle{ entities.getComponent<PositionComponent>().x,
-	//					entities.getComponent<PositionComponent>().y,
-	//					static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX),
-	//					static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY) },
-	//			{ static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.width / entities.getComponent<Sprite2DComponent>().framesX / 2), static_cast<float>(entities.getComponent<Sprite2DComponent>().texture.height / entities.getComponent<Sprite2DComponent>().framesY / 2) },
-	//			0.f,
-	//			WHITE);
-	//	}
-	//}
 }
 
-void Logic::playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multiplyer, int i)
+void Logic::playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer)
 {
-	entity[i].getComponent<Sprite2DComponent>().frameCount++;
-	entity[i].getComponent<Sprite2DComponent>().sourceY = static_cast<float>(entity[i].getComponent<Sprite2DComponent>().texture.height / entity[i].getComponent<Sprite2DComponent>().framesY * sourceY_multiplyer);
+	sprite.frameCount++;
+	sprite.sourceY = static_cast<float>(sprite.texture.height / sprite.framesY * sourceY_multiplyer);
 
-	if (entity[i].getComponent<Sprite2DComponent>().frameCount >= (GetFPS() / entity[i].getComponent<Sprite2DComponent>().frameSpeed))
+	if (sprite.frameCount >= (GetFPS() / sprite.frameSpeed))
 	{
-		entity[i].getComponent<Sprite2DComponent>().frameCount = 0;
-		entity[i].getComponent<Sprite2DComponent>().currentFrame++;
-		if (entity[i].getComponent<Sprite2DComponent>().currentFrame > 3)
+		sprite.frameCount = 0;
+		sprite.currentFrame++;
+		if (sprite.currentFrame > 3)
 		{
-			entity[i].getComponent<Sprite2DComponent>().currentFrame = 0;
+			sprite.currentFrame = 0;
 		}
-		entity[i].getComponent<Sprite2DComponent>().sourceX = static_cast<float>(entity[i].getComponent<Sprite2DComponent>().currentFrame * entity[i].getComponent<Sprite2DComponent>().texture.width / entity[i].getComponent<Sprite2DComponent>().framesX);
+		sprite.sourceX = static_cast<float>(sprite.currentFrame * sprite.texture.width / sprite.framesX);
 	}
 }
 
@@ -350,51 +308,6 @@ void Logic::Render()
 					}
 				}
 			});
-
-		/*for (auto& entities : gameEntities)
-		{
-			if (entities.getComponent<TagComponent>().tag == "house")
-			{
-				float xScrollingOffset = 0.f;
-				float yScrollingOffset = 0.f;
-
-				if (playerDirection.x >= 0.f)
-				{
-					xScrollingOffset = playerDirection.x * map.mapTileSize;
-				}
-				else
-				{
-					xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-				}
-				if (playerDirection.y >= 0.f)
-				{
-					yScrollingOffset = playerDirection.y * map.mapTileSize;
-				}
-				else
-				{
-					yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-				}
-
-				entities.getComponent<PositionComponent>().x = 50.f;
-				entities.getComponent<PositionComponent>().y = windowHeight - 100.f;
-				entities.isActive = true;
-
-				if (entities.hasComponent<PositionComponent>()
-					&& entities.hasComponent<TextureComponent>()
-					&& entities.isActive
-					&& CheckCollisionRecs({ entities.getComponent<PositionComponent>().x + xScrollingOffset,
-											entities.getComponent<PositionComponent>().y + yScrollingOffset,
-						static_cast<float>(entities.getComponent<TextureComponent>().texture.width),
-						static_cast<float>(entities.getComponent<TextureComponent>().texture.height) },
-						{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-				{
-					level = Level::level_0;
-					entities.isActive = false;
-					entities.getComponent<PositionComponent>().x = windowWidth - 100.f;
-					entities.getComponent<PositionComponent>().y = 50.f;
-				}
-			}
-		}*/
 	}
 	drawObject();
 }
@@ -868,8 +781,8 @@ void Logic::handleOpenCloseCharacterInfo()
 
 void Logic::playerMovementAndCollisions(float deltaTime)
 {
-	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
-	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
 			float xScrollingOffset = 0.f;
 			float yScrollingOffset = 0.f;
@@ -897,7 +810,8 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			{
 				if (IsKeyDown(KEY_W))
 				{
-					//playPlayerAnimation(gameEntities, 3, i);
+					playPlayerAnimation(sprite, 3);
+
 					if (position.y - GetScreenHeight() / 2.f - (playerDirection.y) >= 0.f && position.y <= GetScreenHeight() / 2.f)
 					{
 						playerDirection.y += mapScrollingSpeed * deltaTime;
@@ -917,7 +831,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				}
 				if (IsKeyDown(KEY_S))
 				{
-					//playPlayerAnimation(gameEntities, 0, i);
+					playPlayerAnimation(sprite, 0);
 
 					if (position.y + GetScreenHeight() / 2.f + (playerDirection.y * -1) <= map.mapHeight - 90 && position.y >= GetScreenHeight() / 2.f)
 					{
@@ -934,7 +848,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				}
 				if (IsKeyDown(KEY_A))
 				{
-					//playPlayerAnimation(gameEntities, 1, i);
+					playPlayerAnimation(sprite, 1);
 
 					if (position.x - GetScreenWidth() / 2.f - playerDirection.x >= 0.f && position.x <= GetScreenWidth() / 2.f)
 					{
@@ -955,7 +869,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				}
 				if (IsKeyDown(KEY_D))
 				{
-					//playPlayerAnimation(gameEntities, 2, i);
+					playPlayerAnimation(sprite, 2);
 
 					if (position.x + GetScreenWidth() / 2.f + (playerDirection.x * -1) <= map.mapWidth - 90 && position.x >= GetScreenWidth() / 2.f)
 					{
@@ -974,7 +888,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			}});
 
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
-	view.each([this](const auto entity, const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+	view.each([this](const entt::entity entity, const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
 		{
 			float xScrollingOffset = 0.f;
 			float yScrollingOffset = 0.f;
@@ -1120,250 +1034,6 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 			{
 				level = Level::level_1;
 			}});
-
-
-	/*for (int i = 0; i < gameEntities.size(); i++)
-	{
-		float xScrollingOffset = 0.f;
-		float yScrollingOffset = 0.f;
-
-		if (playerDirection.x >= 0.f)
-		{
-			xScrollingOffset = playerDirection.x * map.mapTileSize;
-		}
-		else
-		{
-			xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
-		}
-		if (playerDirection.y >= 0.f)
-		{
-			yScrollingOffset = playerDirection.y * map.mapTileSize;
-		}
-		else
-		{
-			yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
-		}
-
-		mapScrollingSpeed = playerSpeed / 20;
-
-		if (gameEntities[i].getComponent<TagComponent>().tag == "player" && gameEntities[i].hasComponent<PositionComponent>() && gameEntities[i].hasComponent<Sprite2DComponent>())
-		{
-			if (IsKeyDown(KEY_W))
-			{
-				playPlayerAnimation(gameEntities, 3, i);
-				if (gameEntities[i].getComponent<PositionComponent>().y - GetScreenHeight() / 2.f - (playerDirection.y) >= 0.f && gameEntities[i].getComponent<PositionComponent>().y <= GetScreenHeight() / 2.f)
-				{
-					playerDirection.y += mapScrollingSpeed * deltaTime;
-				}
-				else
-				{
-					if (gameEntities[i].getComponent<PositionComponent>().y <= GetScreenHeight() / 2.f)
-					{
-						playerDirection.y = 0.f;
-					}
-					gameEntities[i].getComponent<PositionComponent>().y -= playerSpeed * deltaTime;
-					if (gameEntities[i].getComponent<PositionComponent>().y - static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.height) / playerFramesY / 2 <= 0)
-					{
-						gameEntities[i].getComponent<PositionComponent>().y = 0.f + static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.height) / playerFramesY / 2;
-					}
-				}
-			}
-			if (IsKeyDown(KEY_S))
-			{
-				playPlayerAnimation(gameEntities, 0, i);
-
-				if (gameEntities[i].getComponent<PositionComponent>().y + GetScreenHeight() / 2.f + (playerDirection.y * -1) <= map.mapHeight - 90 && gameEntities[i].getComponent<PositionComponent>().y >= GetScreenHeight() / 2.f)
-				{
-					playerDirection.y -= mapScrollingSpeed * deltaTime;
-				}
-				else
-				{
-					gameEntities[i].getComponent<PositionComponent>().y += playerSpeed * deltaTime;
-					if (gameEntities[i].getComponent<PositionComponent>().y + static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.height) / playerFramesY / 2 > windowHeight)
-					{
-						gameEntities[i].getComponent<PositionComponent>().y = static_cast<float>(windowHeight - gameEntities[i].getComponent<Sprite2DComponent>().texture.height / playerFramesY / 2);
-					}
-				}
-			}
-			if (IsKeyDown(KEY_A))
-			{
-				playPlayerAnimation(gameEntities, 1, i);
-
-				if (gameEntities[i].getComponent<PositionComponent>().x - GetScreenWidth() / 2.f - playerDirection.x >= 0.f && gameEntities[i].getComponent<PositionComponent>().x <= GetScreenWidth() / 2.f)
-				{
-					playerDirection.x += mapScrollingSpeed * deltaTime;
-				}
-				else
-				{
-					if (gameEntities[i].getComponent<PositionComponent>().x <= GetScreenWidth() / 2.f)
-					{
-						playerDirection.x = 0.f;
-					}
-					gameEntities[i].getComponent<PositionComponent>().x -= playerSpeed * deltaTime;
-					if (gameEntities[i].getComponent<PositionComponent>().x - static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.width) / playerFramesX / 2 <= 0.f)
-					{
-						gameEntities[i].getComponent<PositionComponent>().x = 0.f + static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.width) / playerFramesX / 2;
-					}
-				}
-			}
-			if (IsKeyDown(KEY_D))
-			{
-				playPlayerAnimation(gameEntities, 2, i);
-
-				if (gameEntities[i].getComponent<PositionComponent>().x + GetScreenWidth() / 2.f + (playerDirection.x * -1) <= map.mapWidth - 90 && gameEntities[i].getComponent<PositionComponent>().x >= GetScreenWidth() / 2.f)
-				{
-					playerDirection.x -= mapScrollingSpeed * deltaTime;
-				}
-				else
-				{
-					gameEntities[i].getComponent<PositionComponent>().x += playerSpeed * deltaTime;
-					if (gameEntities[i].getComponent<PositionComponent>().x + static_cast<float>(gameEntities[i].getComponent<Sprite2DComponent>().texture.width) / playerFramesX / 2 >= windowWidth)
-					{
-						gameEntities[i].getComponent<PositionComponent>().x = static_cast<float>(windowWidth - gameEntities[i].getComponent<Sprite2DComponent>().texture.width / playerFramesX / 2);
-					}
-				}
-			}
-			playerLocation = { gameEntities[i].getComponent<PositionComponent>().x, gameEntities[i].getComponent<PositionComponent>().y };
-		}
-		else if (gameEntities[i].getComponent<TagComponent>().tag == "vendor"
-			&& gameEntities[i].hasComponent<PositionComponent>()
-			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& gameEntities[i].isActive
-			&& questReturnValue < 6
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
-									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
-				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-		{
-			if (questReturnValue == 1)
-			{
-				PlaySound(questDoneSound);
-				inventory.addGold(5);
-				questReturnValue = 6;
-				questState = QuestState::Done;
-				inventory.removeOrDecreaseItems("woodStash", 10);
-				attributes.addToXPCount(6000);
-
-			}
-			else if (questReturnValue == 2)
-			{
-				questState = QuestState::None;
-				questReturnValue = 6;
-			}
-			else if (questReturnValue == 4)
-			{
-				for (auto& items : inventory.getItems())
-				{
-					if (items.id == "woodStash")
-					{
-						if (items.quantity >= 10)
-						{
-							questReturnValue = 0;
-						}
-					}
-				}
-			}
-			else if (questReturnValue == 5)
-			{
-				PlaySound(questAcceptedSound);
-				questState = QuestState::Accepted;
-				questReturnValue = 4;
-			}
-			else
-			{
-				questReturnValue = dialogue.performDialogue(static_cast<int>(gameEntities[i].getComponent<PositionComponent>().x), static_cast<int>(gameEntities[i].getComponent<PositionComponent>().y));
-			}
-		}
-		else if (gameEntities[i].getComponent<TagComponent>().tag == "woodStash"
-			&& gameEntities[i].hasComponent<PositionComponent>()
-			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& gameEntities[i].isActive
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
-									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
-				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-		{
-			Item woodStash;
-			woodStash.id = "woodStash";
-			woodStash.isStackable = true;
-			woodStash.itemType = ItemType::Collectible;
-			woodStash.quantity = 1;
-			woodStash.stackSize = 10;
-			woodStash.texture = gameEntities[i].getComponent<TextureComponent>().texture;
-			inventory.addItem(woodStash);
-
-			if (inventory.canAddItems == true)
-			{
-				gameEntities.erase(gameEntities.begin() + i);
-			}
-
-		}
-
-		else if (gameEntities[i].getComponent<TagComponent>().tag == "fish"
-			&& gameEntities[i].hasComponent<PositionComponent>()
-			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& gameEntities[i].isActive
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
-									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
-				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-		{
-			Item fish;
-			fish.id = "fish";
-			fish.isStackable = true;
-			fish.itemType = ItemType::Food;
-			fish.quantity = 1;
-			fish.stackSize = 10;
-			fish.texture = gameEntities[i].getComponent<TextureComponent>().texture;
-			inventory.addItem(fish);
-
-			if (inventory.canAddItems == true)
-			{
-				gameEntities.erase(gameEntities.begin() + i);
-			}
-		}
-
-		else if (gameEntities[i].getComponent<TagComponent>().tag == "barrel"
-			&& gameEntities[i].hasComponent<PositionComponent>()
-			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& gameEntities[i].isActive
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
-									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
-				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-		{
-			Item barrel;
-			barrel.id = "barrel";
-			barrel.isStackable = true;
-			barrel.itemType = ItemType::Collectible;
-			barrel.quantity = 1;
-			barrel.stackSize = 10;
-			barrel.texture = gameEntities[i].getComponent<TextureComponent>().texture;
-			inventory.addItem(barrel);
-
-			if (inventory.canAddItems == true)
-			{
-				gameEntities.erase(gameEntities.begin() + i);
-			}
-		}
-		else if (gameEntities[i].getComponent<TagComponent>().tag == "house"
-			&& gameEntities[i].hasComponent<PositionComponent>()
-			&& gameEntities[i].hasComponent<TextureComponent>()
-			&& gameEntities[i].isActive
-			&& CheckCollisionRecs({ gameEntities[i].getComponent<PositionComponent>().x + xScrollingOffset,
-									gameEntities[i].getComponent<PositionComponent>().y + yScrollingOffset,
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.width),
-				static_cast<float>(gameEntities[i].getComponent<TextureComponent>().texture.height) },
-				{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
-		{
-			gameEntities[i].isActive = false;
-			level = Level::level_1;
-		}
-	}*/
 }
 
 void Logic::getPlayerFramesXY()
@@ -1377,15 +1047,6 @@ void Logic::getPlayerFramesXY()
 				playerFramesY = sprite.framesY;
 			}
 		});
-
-	/*for (auto& entities : gameEntities)
-	{
-		if (entities.hasComponent<Sprite2DComponent>() && entities.getComponent<TagComponent>().tag == "player")
-		{
-			playerFramesX = entities.getComponent<Sprite2DComponent>().framesX;
-			playerFramesY = entities.getComponent<Sprite2DComponent>().framesY;
-		}
-	}*/
 }
 
 void Logic::handleLevels()
@@ -1435,58 +1096,7 @@ void Logic::handleLevels()
 					active.isActive = false;
 				}
 			}
-
 		});
-
-
-	/*if (level == Level::level_0)
-	{
-		for (auto& entities : gameEntities)
-		{
-			if (entities.getComponent<TagComponent>().tag == "barrel")
-			{
-				entities.isActive = false;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "woodStash")
-			{
-				entities.isActive = false;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "fish")
-			{
-				entities.isActive = false;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "house")
-			{
-				entities.isActive = true;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "vendor")
-			{
-				entities.isActive = true;
-			}
-		}
-	}
-	else if (level == Level::level_1)
-	{
-		for (auto& entities : gameEntities)
-		{
-			if (entities.getComponent<TagComponent>().tag == "barrel")
-			{
-				entities.isActive = true;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "woodStash")
-			{
-				entities.isActive = true;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "fish")
-			{
-				entities.isActive = true;
-			}
-			else if (entities.getComponent<TagComponent>().tag == "vendor")
-			{
-				entities.isActive = false;
-			}
-		}
-	}*/
 }
 
 void Logic::saveGame()
@@ -1577,14 +1187,6 @@ void Logic::loadGame()
 								position.x = std::stof(inputData[i + 2]);
 							}
 						});
-					/*for (auto& entities : gameEntities)
-					{
-						if (entities.getComponent<TagComponent>().tag == "player")
-						{
-							entities.getComponent<PositionComponent>().x = std::stof(inputData[i + 2]);
-							break;
-						}
-					}*/
 					playerLocation.x = std::stof(inputData[i + 2]);
 				}
 				else if (inputData[i] == "playerLocationY")
@@ -1597,14 +1199,6 @@ void Logic::loadGame()
 								position.y = std::stof(inputData[i + 2]);
 							}
 						});
-					/*for (auto& entities : gameEntities)
-					{
-						if (entities.getComponent<TagComponent>().tag == "player")
-						{
-							entities.getComponent<PositionComponent>().y = std::stof(inputData[i + 2]);
-							break;
-						}
-					}*/
 					playerLocation.y = std::stof(inputData[i + 2]);
 				}
 				else if (inputData[i] == "questReturnValue")
@@ -1962,148 +1556,6 @@ void Logic::addLevelExplore()
 				}
 			}
 		});
-
-	/*for (int i = 0; i < gameEntities.size(); i++)
-	{
-		if (gameEntities[i].getComponent<TagComponent>().tag == "player")
-		{
-
-			int playerLocXGrid = static_cast<int>(gameEntities[i].getComponent<PositionComponent>().x - (playerDirection.x * tileSize));
-			int playerLocYGrid = static_cast<int>(gameEntities[i].getComponent<PositionComponent>().y - (playerDirection.y * tileSize));
-
-			if (level == Level::level_0)
-			{
-				for (int i = -(clearViewSize); i < clearViewSize; i++)
-				{
-					for (int j = -(clearViewSize); j < clearViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
-							{
-								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
-							}
-
-						}
-					}
-				}
-				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
-				{
-					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
-							{
-								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
-							}
-						}
-					}
-				}
-				for (int i = -(grayViewSize); i < grayViewSize; i++)
-				{
-					for (int j = -(grayViewSize); j < grayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
-							{
-								map.levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
-							}
-						}
-					}
-				}
-				for (int row = 0; row < tileRow; row++)
-				{
-					for (int column = 0; column < tileColumn; column++)
-					{
-						int posX = static_cast<int>((column + playerDirection.x) * tileSize);
-						int posY = static_cast<int>((row + playerDirection.y) * tileSize);
-
-						if (map.levelZeroExploreMap[row][column] == 0)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
-						}
-						else if (map.levelZeroExploreMap[row][column] == 2)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
-						}
-						else if (map.levelZeroExploreMap[row][column] == 3)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
-						}
-					}
-
-				}
-			}
-			else if (level == Level::level_1)
-			{
-				for (int i = -(clearViewSize); i < clearViewSize; i++)
-				{
-					for (int j = -(clearViewSize); j < clearViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
-							{
-								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
-							}
-
-						}
-					}
-				}
-				for (int i = -(clearGrayViewSize); i < clearGrayViewSize; i++)
-				{
-					for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
-							{
-								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
-							}
-						}
-					}
-				}
-				for (int i = -(grayViewSize); i < grayViewSize; i++)
-				{
-					for (int j = -(grayViewSize); j < grayViewSize; j++)
-					{
-						if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
-						{
-							if (map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
-							{
-								map.levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
-							}
-						}
-					}
-				}
-				for (int row = 0; row < tileRow; row++)
-				{
-					for (int column = 0; column < tileColumn; column++)
-					{
-						int posX = static_cast<int>((column + playerDirection.x) * tileSize);
-						int posY = static_cast<int>((row + playerDirection.y) * tileSize);
-
-						if (map.levelOneExploreMap[row][column] == 0)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
-						}
-						else if (map.levelOneExploreMap[row][column] == 2)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
-						}
-						else if (map.levelOneExploreMap[row][column] == 3)
-						{
-							DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
-						}
-					}
-
-				}
-			}
-			break;
-		}
-	}*/
 }
 
 void Logic::Update()

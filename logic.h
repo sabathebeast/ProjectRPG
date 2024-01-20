@@ -26,6 +26,7 @@ enum class QuestState : unsigned char
 class Scene;
 class Entity;
 class Item;
+struct Sprite2DComponent;
 
 class Logic
 {
@@ -45,7 +46,7 @@ private:
 	void initializeSound(Sound& sound, const char* filePath);
 	void initializeAllSound();
 	void drawObject();
-	void playPlayerAnimation(std::vector<Entity>& entity, int sourceY_multiplyer, int i);
+	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
 	void closeBag();
 	void openBag();
 	void showQuest();
@@ -80,7 +81,6 @@ private:
 	Texture waterTexture;
 	Texture grassTexture;
 	Texture houseTexture;
-	//std::vector<Entity> gameEntities;
 	std::vector<Texture> gameTextures;
 	std::vector<Sound> gameSounds;
 	float playerSpeed = 0.f;
