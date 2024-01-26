@@ -1,11 +1,11 @@
 name : Csabi
 isNameGiven : 1
 goldCount : 5
-playerLocationX : 224.704
-playerLocationY : 260.436
+playerLocationX : 142.507
+playerLocationY : 623.394
 questReturnValue : 6
 playerDirectionX : 0
-playerDirectionY : 0
+playerDirectionY : -5.0081
 xpCount : 1000
 playerLevel : 2
 levelXP : 5000
@@ -15,9 +15,9 @@ agility : 8
 extraAgility : 3
 stamina : 15
 extraStamina : 5
-currentHealth : 287.5
+currentHealth : 436
 maxHealth : 500
-currentEnergy : 187.5
+currentEnergy : 220
 maxEnergy : 220
 talentPoints : 1
 level : 0
