@@ -21,6 +21,7 @@ Attributes attributes;
 Logic::Logic()
 {
 	initializeAllTexture();
+	constructMapEntities(grassTexture, waterTexture, dirtTexture);
 	createAllGameEntity();
 	getPlayerFramesXY();
 	playerSpeed = 200.f;
@@ -60,6 +61,14 @@ void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Textu
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<Sprite2DComponent>(texture, currentFrame, frameCount, frameSpeed, framesX, framesY, sourceX, sourceY);
 	gameEntity.addComponent<ActiveComponent>();
+}
+
+void Logic::createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag)
+{
+	Entity gameEntity = scene.createEntity(tag);
+	gameEntity.addComponent<PositionComponent>(posX, posY);
+	gameEntity.addComponent<TextureComponent>(texture);
+	gameEntity.addComponent<TileComponent>();
 }
 
 void Logic::createAllGameEntity()
@@ -170,27 +179,39 @@ void Logic::initializeAllSound()
 
 void Logic::drawObject()
 {
+	entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const TileComponent>();
+	mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const TileComponent& tile)
+		{
+			if (tile.isDrawable)
+			{
+				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+			}
+		});
+
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const ActiveComponent>();
 	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const ActiveComponent& active)
 		{
+			if (active.isActive)
+			{
 				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+			}
 		});
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this](const TagComponent& tag, const PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
-				DrawTexturePro(sprite.texture,
-					Rectangle{ sprite.sourceX,
-								sprite.sourceY,
+			DrawTexturePro(sprite.texture,
+			Rectangle{ sprite.sourceX,
+						sprite.sourceY,
+						static_cast<float>(sprite.texture.width / sprite.framesX),
+						static_cast<float>(sprite.texture.height / sprite.framesY) },
+						Rectangle{ position.x,
+								position.y,
 								static_cast<float>(sprite.texture.width / sprite.framesX),
 								static_cast<float>(sprite.texture.height / sprite.framesY) },
-					Rectangle{ position.x,
-							position.y,
-							static_cast<float>(sprite.texture.width / sprite.framesX),
-							static_cast<float>(sprite.texture.height / sprite.framesY) },
-					{ static_cast<float>(sprite.texture.width / sprite.framesX / 2), static_cast<float>(sprite.texture.height / sprite.framesY / 2) },
-					0.f,
-					WHITE);
+				{ static_cast<float>(sprite.texture.width / sprite.framesX / 2), static_cast<float>(sprite.texture.height / sprite.framesY / 2) },
+				0.f,
+				WHITE);
 		});
 }
 
@@ -236,11 +257,47 @@ void Logic::Render()
 	handleLevels();
 	if (level == Level::level_0)
 	{
-		map.drawMap(dirtTexture, waterTexture, grassTexture, playerDirection, map.levelZeroExploreMap);
+		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
+		mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
+			{
+				//---------------- TODO: Logic for drawing tiles only in the windows size ---------------- //
+				/*if (true)
+
+				{
+					tile.isDrawable = false;
+				}
+				else
+				{
+					tile.isDrawable = true;
+				}*/
+			});
+
+		entt::basic_view CollectibeView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
+		CollectibeView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+			{
+				if (tag.tag == "woodStash" || tag.tag == "fish" || tag.tag == "barrel")
+				{
+					active.isActive = false;
+				}
+			});
 	}
 	else
 	{
-		map.drawMap(grassTexture, waterTexture, dirtTexture, playerDirection, map.levelOneExploreMap);
+		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
+		mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
+			{
+				if (playerLocation.x + (playerDirection.x * tileSize) - windowWidth / 2.f > position.x &&
+					playerLocation.x + (playerDirection.x * tileSize) + windowWidth / 2.f < position.x &&
+					playerLocation.y + (playerDirection.y * tileSize) - windowHeight / 2.f > position.y &&
+					playerLocation.y + (playerDirection.y * tileSize) + windowHeight / 2.f < position.y)
+				{
+					tile.isDrawable = false;
+				}
+				else
+				{
+					tile.isDrawable = true;
+				}
+			});
 
 		entt::basic_view view = scene.registry.view<const TagComponent, PositionComponent, TextureComponent>();
 		view.each([this](const TagComponent tag, PositionComponent position, TextureComponent texture)
@@ -384,10 +441,10 @@ void Logic::bagUI()
 					DrawTexturePro(inventory.getItems()[j + i * bagRow].texture, Rectangle{ 0.f,0.f,(float)inventory.getItems()[j + i * bagRow].texture.width, (float)inventory.getItems()[j + i * bagRow].texture.height }, Rectangle{ (float)inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) ,(float)inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1),(float)inventoryWidth / bagRow - 1,(float)(inventoryHeight - headerOffset) / bagColumn - 1 }, { 0.f,0.f }, 0.f, WHITE);
 					DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), 20, WHITE);
 
-					if (mousePos.x > inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) &&
-						mousePos.x < inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) + inventoryWidth / bagRow - 1 &&
-						mousePos.y > inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1) &&
-						mousePos.y < inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1 + (inventoryHeight - headerOffset) / bagColumn - 1))
+					if (mousePos.x > static_cast<float>(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1)) &&
+						mousePos.x < static_cast<float>(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) + inventoryWidth / bagRow - 1) &&
+						mousePos.y > static_cast<float>(inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1)) &&
+						mousePos.y < static_cast<float>(inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1 + (inventoryHeight - headerOffset) / bagColumn - 1)))
 					{
 						int itemText = MeasureText(inventory.getItems()[j + i * bagRow].id, 20);
 						DrawRectangle(inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) - itemText - 2, inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1) - 20, itemText + 4, 20, WHITE);
@@ -428,7 +485,7 @@ void Logic::toolBarUI()
 	int toolWidth = (toolBarWidth - 10 * 2) / 10;
 	int toolHeight = toolBarHeight - 4;
 
-	if (playerLocation.y + (playerTexture.height / playerFramesY) / 2 >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
+	if (playerLocation.y + static_cast<float>((playerTexture.height / playerFramesY) / 2) >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
 	{
 		toolBarPosY = 5;
 	}
@@ -500,10 +557,10 @@ void Logic::characterInfoUI()
 		DrawText(TextFormat("Available points: %i", attributes.getTalentPoints()), characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - pointsText / 2, characterInfoPosY + spacing + padding, 25, BLACK);
 
 		int rerollPointsText = MeasureText("Reroll points", 25);
-		if (mousePos.x > characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2 &&
-			mousePos.x < characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2 + rerollPointsText &&
-			mousePos.y > characterInfoPosY + 2 * spacing + padding &&
-			mousePos.y < characterInfoPosY + 2 * spacing + padding + 25)
+		if (mousePos.x > static_cast<float>(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2) &&
+			mousePos.x < static_cast<float>(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2 + rerollPointsText) &&
+			mousePos.y > static_cast<float>(characterInfoPosY + 2 * spacing + padding) &&
+			mousePos.y < static_cast<float>(characterInfoPosY + 2 * spacing + padding + 25))
 		{
 			DrawRectangle(characterInfoPosX + characterInfoWidth / 2 + characterInfoWidth / 4 - rerollPointsText / 2, characterInfoPosY + 2 * spacing + padding, rerollPointsText, 25, GREEN);
 			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -545,10 +602,10 @@ void Logic::characterInfoUI()
 			DrawRectangle(characterInfoPosX + padding, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 4, spacing, Color{ 45,45,45,200 });
 			DrawRectangle(characterInfoPosX + 2 * padding + characterInfoWidth / 4, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 8 - 2 * padding, spacing, Color{ 45,45,45,200 });
 
-			if (mousePos.x > characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 &&
-				mousePos.x < characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 - 2 * padding &&
-				mousePos.y > characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding &&
-				mousePos.y < characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing)
+			if (mousePos.x > static_cast<float>(characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8) &&
+				mousePos.x < static_cast<float>(characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 - 2 * padding) &&
+				mousePos.y > static_cast<float>(characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding) &&
+				mousePos.y < static_cast<float>(characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing))
 			{
 				DrawRectangle(characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, GREEN);
 				DrawText("+", characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 32 - plusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, BLACK);
@@ -579,10 +636,10 @@ void Logic::characterInfoUI()
 				DrawText("+", characterInfoPosX + padding + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 32 - plusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, GREEN);
 			}
 
-			if (mousePos.x > characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 &&
-				mousePos.x < characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + characterInfoWidth / 16 - 2 * padding &&
-				mousePos.y > characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding &&
-				mousePos.y < characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing)
+			if (mousePos.x > static_cast<float>(characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16) &&
+				mousePos.x < static_cast<float>(characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + characterInfoWidth / 16 - 2 * padding) &&
+				mousePos.y > static_cast<float>(characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding) &&
+				mousePos.y < static_cast<float>(characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + spacing))
 			{
 				DrawRectangle(characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding, characterInfoWidth / 16 - 2 * padding, spacing, RED);
 				DrawText("-", characterInfoPosX + characterInfoWidth / 4 + characterInfoWidth / 8 + characterInfoWidth / 16 + minusText, characterInfoPosY + 2 * padding + 5 * spacing + i * spacing + i * padding + padding, 20, BLACK);
@@ -1470,6 +1527,36 @@ void Logic::addLevelExplore()
 				}
 			}
 		});
+}
+
+void Logic::constructMapEntities(Texture tex0, Texture tex1, Texture tex2)
+{
+	for (int row = 0; row < tileRow; row++)
+	{
+		for (int column = 0; column < tileColumn; column++)
+		{
+			float posX = column * tileSize;
+			float posY = row * tileSize;
+
+			if (map.map[row][column] == 0)
+			{
+				createMapEntities(scene, posX, posY, tex0, "grass");
+			}
+			else if (map.map[row][column] == 1)
+			{
+				createMapEntities(scene, posX, posY, tex1, "water");
+			}
+			else if (map.map[row][column] == 2)
+			{
+				createMapEntities(scene, posX, posY, tex0, "dirt");
+			}
+		}
+	}
+}
+
+void Logic::updateMap()
+{
+
 }
 
 void Logic::Update()

@@ -24,8 +24,6 @@ enum class QuestState : unsigned char
 };
 
 class Scene;
-class Entity;
-class Item;
 struct Sprite2DComponent;
 
 class Logic
@@ -40,6 +38,7 @@ public:
 private:
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
+	void createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAllGameEntity();
 	void initializeTexture(Texture& texture, const char* filePath);
 	void initializeAllTexture();
@@ -66,6 +65,8 @@ private:
 	void healthRegenerate(double currentTime);
 	void energyRegenerate(double currentTime);
 	void addLevelExplore();
+	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
+	void updateMap();
 	bool isEnergyRegenerateTimerStarted = true;
 	double energyRegenerateTime = 0.0;
 	bool isHealthRegenerateTimerStarted = true;

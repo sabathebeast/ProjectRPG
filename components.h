@@ -30,3 +30,8 @@ struct ActiveComponent
 {
 	bool isActive = true;
 };
+
+struct TileComponent
+{
+	bool isDrawable = true;
+};
