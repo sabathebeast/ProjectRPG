@@ -8,16 +8,14 @@ enum class ItemType : unsigned char
 	Collectible,
 };
 
-class Item
+struct Item
 {
-public:
 	const char* id = 0;
 	bool isStackable = false;
 	int stackSize = 0;
 	int quantity = 0;
 	Texture texture;
 	ItemType itemType;
-private:
 };
 
 class Inventory

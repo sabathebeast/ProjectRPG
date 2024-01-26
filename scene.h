@@ -2,8 +2,6 @@
 
 #include "src/entt.hpp"
 
-class Entity;
-
 class Scene
 {
 public:
