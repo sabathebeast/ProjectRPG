@@ -21,19 +21,19 @@ Attributes attributes;
 Logic::Logic()
 {
 	initializeAllTexture();
-	constructMapEntities(grassTexture, waterTexture, dirtTexture);
+	initializeAllSound();
+	constructMapEntities(textures[*Textures::Grass], textures[*Textures::Water], textures[*Textures::Dirt]);
 	createAllGameEntity();
 	getPlayerFramesXY();
 	playerSpeed = 200.f;
 	dialogue.init();
-	initializeAllSound();
 }
 
 Logic::~Logic()
 {
 	saveGame();
 
-	for (auto& sound : gameSounds)
+	for (auto& sound : sounds)
 	{
 		UnloadSound(sound);
 	}
@@ -41,7 +41,7 @@ Logic::~Logic()
 	UnloadMusicStream(themeSong);
 	CloseAudioDevice();
 
-	for (auto& texture : gameTextures)
+	for (auto& texture : textures)
 	{
 		UnloadTexture(texture);
 	}
@@ -73,9 +73,9 @@ void Logic::createMapEntities(Scene& scene, float posX, float posY, Texture text
 
 void Logic::createAllGameEntity()
 {
-	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, playerTexture, 0, 0, 3, 4, 4, 0, 0, "player");
-	createBasicGameEntity(scene, 122.f, 122.f, vendorTexture, "vendor");
-	createBasicGameEntity(scene, windowWidth - 100.f, 50.f, houseTexture, "house");
+	createAnimatedGameEntity(scene, GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, textures[*Textures::Player], 0, 0, 3, 4, 4, 0, 0, "player");
+	createBasicGameEntity(scene, 122.f, 122.f, textures[*Textures::Vendor], "vendor");
+	createBasicGameEntity(scene, windowWidth - 100.f, 50.f, textures[*Textures::House], "house");
 
 	loadGame();
 
@@ -87,27 +87,27 @@ void Logic::createAllGameEntity()
 			{
 				for (int a = 0; a < 10 - inventory.getItems()[i].quantity; a++)
 				{
-					int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
-					int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
-					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+					int RandomX = GetRandomValue(0 + textures[*Textures::WoodStash].width, map.mapWidth - textures[*Textures::WoodStash].width);
+					int RandomY = GetRandomValue(0 + textures[*Textures::WoodStash].height, map.mapHeight - textures[*Textures::WoodStash].height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::WoodStash], "woodStash");
 				}
 			}
 			else if (inventory.getItems()[i].id == "fish")
 			{
 				for (int b = 0; b < 10 - inventory.getItems()[i].quantity; b++)
 				{
-					int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
-					int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
-					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
+					int RandomX = GetRandomValue(0 + textures[*Textures::Fish].width, map.mapWidth - textures[*Textures::Fish].width);
+					int RandomY = GetRandomValue(0 + textures[*Textures::Fish].height, map.mapHeight - textures[*Textures::Fish].height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::Fish], "fish");
 				}
 			}
 			else if (inventory.getItems()[i].id == "barrel")
 			{
 				for (int c = 0; c < 10 - inventory.getItems()[i].quantity; c++)
 				{
-					int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
-					int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
-					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+					int RandomX = GetRandomValue(0 + textures[*Textures::Barrel].width, map.mapWidth - textures[*Textures::Barrel].width);
+					int RandomY = GetRandomValue(0 + textures[*Textures::Barrel].height, map.mapHeight - textures[*Textures::Barrel].height);
+					createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::Barrel], "barrel");
 				}
 			}
 		}
@@ -116,62 +116,50 @@ void Logic::createAllGameEntity()
 	{
 		for (int a = 0; a < 10; a++)
 		{
-			int RandomX = GetRandomValue(0 + woodStashTexture.width, map.mapWidth - woodStashTexture.width);
-			int RandomY = GetRandomValue(0 + woodStashTexture.height, map.mapHeight - woodStashTexture.height);
-			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), woodStashTexture, "woodStash");
+			int RandomX = GetRandomValue(0 + textures[*Textures::WoodStash].width, map.mapWidth - textures[*Textures::WoodStash].width);
+			int RandomY = GetRandomValue(0 + textures[*Textures::WoodStash].height, map.mapHeight - textures[*Textures::WoodStash].height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::WoodStash], "woodStash");
 		}
 		for (int b = 0; b < 10; b++)
 		{
-			int RandomX = GetRandomValue(0 + fishTexture.width, map.mapWidth - fishTexture.width);
-			int RandomY = GetRandomValue(0 + fishTexture.height, map.mapHeight - fishTexture.height);
-			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), fishTexture, "fish");
+			int RandomX = GetRandomValue(0 + textures[*Textures::Fish].width, map.mapWidth - textures[*Textures::Fish].width);
+			int RandomY = GetRandomValue(0 + textures[*Textures::Fish].height, map.mapHeight - textures[*Textures::Fish].height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::Fish], "fish");
 		}
 		for (int c = 0; c < 10; c++)
 		{
-			int RandomX = GetRandomValue(0 + barrelTexture.width, map.mapWidth - barrelTexture.width);
-			int RandomY = GetRandomValue(0 + barrelTexture.height, map.mapHeight - barrelTexture.height);
-			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), barrelTexture, "barrel");
+			int RandomX = GetRandomValue(0 + textures[*Textures::Barrel].width, map.mapWidth - textures[*Textures::Barrel].width);
+			int RandomY = GetRandomValue(0 + textures[*Textures::Barrel].height, map.mapHeight - textures[*Textures::Barrel].height);
+			createBasicGameEntity(scene, static_cast<float>(RandomX), static_cast<float>(RandomY), textures[*Textures::Barrel], "barrel");
 		}
 	}
 }
 
-void Logic::initializeTexture(Texture& texture, const char* filePath)
-{
-	texture = LoadTexture(filePath);
-	gameTextures.push_back(texture);
-}
-
 void Logic::initializeAllTexture()
 {
-	initializeTexture(playerTexture, "./Assets/playerSprite.png");
-	initializeTexture(vendorTexture, "./Assets/adventurer_idle.png");
-	initializeTexture(woodStashTexture, "./Assets/wood_stash.png");
-	initializeTexture(bagTexture, "./Assets/bag.png");
-	initializeTexture(goldCurrencyTexture, "./Assets/goldCurrency.png");
-	initializeTexture(fishTexture, "./Assets/fish.png");
-	initializeTexture(barrelTexture, "./Assets/barrel.png");
-	initializeTexture(dirtTexture, "./Map/dirt.png");
-	initializeTexture(waterTexture, "./Map/water.png");
-	initializeTexture(grassTexture, "./Map/grass.png");
-	initializeTexture(houseTexture, "./Assets/house.png");
-}
-
-void Logic::initializeSound(Sound& sound, const char* filePath)
-{
-	sound = LoadSound(filePath);
-	gameSounds.push_back(sound);
+	textures[*Textures::Bag] = LoadTexture("./Assets/bag.png");
+	textures[*Textures::Barrel] = LoadTexture("./Assets/barrel.png");
+	textures[*Textures::Dirt] = LoadTexture("./Map/dirt.png");
+	textures[*Textures::Fish] = LoadTexture("./Assets/fish.png");
+	textures[*Textures::GoldCurrency] = LoadTexture("./Assets/goldCurrency.png");
+	textures[*Textures::Grass] = LoadTexture("./Map/grass.png");
+	textures[*Textures::House] = LoadTexture("./Assets/house.png");
+	textures[*Textures::Player] = LoadTexture("./Assets/playerSprite.png");
+	textures[*Textures::Vendor] = LoadTexture("./Assets/adventurer_idle.png");
+	textures[*Textures::Water] = LoadTexture("./Map/water.png");
+	textures[*Textures::WoodStash] = LoadTexture("./Assets/wood_stash.png");
 }
 
 void Logic::initializeAllSound()
 {
 	InitAudioDevice();
 
-	initializeSound(questAcceptedSound, "./Sounds/questAccepted.wav");
-	initializeSound(closeBagSound, "./Sounds/closeBag.wav");
-	initializeSound(openBagSound, "./Sounds/openBag.wav");
-	initializeSound(coinCollectedSound, "./Sounds/coinCollected.wav");
-	initializeSound(questDoneSound, "./Sounds/questDone.wav");
-	initializeSound(inventoryFull, "./Sounds/inventoryFull.mp3");
+	sounds[*Sounds::CloseBag] = LoadSound("./Sounds/closeBag.wav");
+	sounds[*Sounds::CoinCollected] = LoadSound("./Sounds/coinCollected.wav");
+	sounds[*Sounds::InventoryIsFull] = LoadSound("./Sounds/inventoryFull.mp3");
+	sounds[*Sounds::OpenBag] = LoadSound("./Sounds/openBag.wav");
+	sounds[*Sounds::QuestAccepted] = LoadSound("./Sounds/questAccepted.wav");
+	sounds[*Sounds::QuestDone] = LoadSound("./Sounds/questDone.wav");
 
 	themeSong = LoadMusicStream("./Sounds/themeSong.mp3");
 	PlayMusicStream(themeSong);
@@ -311,7 +299,7 @@ void Logic::Render()
 											position.y + yScrollingOffset,
 						static_cast<float>(texture.texture.width),
 						static_cast<float>(texture.texture.height) },
-						{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+						{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 					{
 						level = Level::level_0;
 						position.x = windowWidth - 100.f;
@@ -325,13 +313,13 @@ void Logic::Render()
 
 void Logic::closeBag()
 {
-	PlaySound(closeBagSound);
+	PlaySound(sounds[*Sounds::CloseBag]);
 	isBagOpen = false;
 }
 
 void Logic::openBag()
 {
-	PlaySound(openBagSound);
+	PlaySound(sounds[*Sounds::OpenBag]);
 	isBagOpen = true;
 }
 
@@ -401,7 +389,7 @@ void Logic::bagUI()
 		DrawRectangle(inventoryPositionX + 1, inventoryPositionY + inventoryHeight, inventoryWidth - 1, 30, GRAY);
 		DrawText(TextFormat("%i", inventory.getGoldCount()), inventoryPositionX + 5, inventoryPositionY + inventoryHeight + 5, 20, BLACK);
 		int goldTextSize = MeasureText(TextFormat("%i", inventory.getGoldCount()), 20);
-		DrawTextureEx(goldCurrencyTexture, { inventoryPositionX + 5.f + goldTextSize, inventoryPositionY + inventoryHeight + 2.f }, 0.f, 1.5f, WHITE);
+		DrawTextureEx(textures[*Textures::GoldCurrency], { inventoryPositionX + 5.f + goldTextSize, inventoryPositionY + inventoryHeight + 2.f }, 0.f, 1.5f, WHITE);
 
 		DrawText("INVENTORY [i]", inventoryPositionX + 2, inventoryPositionY + 2, 25, BLACK);
 		int closeWindowPositionX = inventoryPositionX + inventoryWidth - 20;
@@ -456,12 +444,12 @@ void Logic::bagUI()
 	}
 	else
 	{
-		float bagPosX = GetScreenWidth() - bagTexture.width * 0.02f - 5.f;
-		float bagPosY = GetScreenHeight() - bagTexture.height * 0.02f - 5.f;
-		DrawTextureEx(bagTexture, { bagPosX, bagPosY }, 0.f, 0.02f, WHITE);
+		float bagPosX = GetScreenWidth() - textures[*Textures::Bag].width * 0.02f - 5.f;
+		float bagPosY = GetScreenHeight() - textures[*Textures::Bag].height * 0.02f - 5.f;
+		DrawTextureEx(textures[*Textures::Bag], { bagPosX, bagPosY }, 0.f, 0.02f, WHITE);
 		Vector2 mousePos = GetMousePosition();
-		if (mousePos.x > bagPosX && mousePos.x < bagPosX + bagTexture.width * 0.02f - 5.f
-			&& mousePos.y > bagPosY && mousePos.y < bagPosY + bagTexture.height * 0.02f - 5.f)
+		if (mousePos.x > bagPosX && mousePos.x < bagPosX + textures[*Textures::Bag].width * 0.02f - 5.f
+			&& mousePos.y > bagPosY && mousePos.y < bagPosY + textures[*Textures::Bag].height * 0.02f - 5.f)
 		{
 			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -485,7 +473,7 @@ void Logic::toolBarUI()
 	int toolWidth = (toolBarWidth - 10 * 2) / 10;
 	int toolHeight = toolBarHeight - 4;
 
-	if (playerLocation.y + static_cast<float>((playerTexture.height / playerFramesY) / 2) >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
+	if (playerLocation.y + static_cast<float>((textures[*Textures::Player].height / playerFramesY) / 2) >= toolBarPosY && playerLocation.x >= toolBarPosX && playerLocation.x <= toolBarPosX + toolBarWidth)
 	{
 		toolBarPosY = 5;
 	}
@@ -728,7 +716,7 @@ void Logic::characterOverlayUI()
 
 	// character pic
 	DrawRectangle(5, 5, characterImgWidth, characterImgHeight, Color{ 25,25,25,150 });
-	DrawTexturePro(playerTexture, Rectangle{ 0,0, playerTexture.width / 4.f, playerTexture.height / 4.f / 1.5f }, Rectangle{ 5.f + characterImgWidth / 2, 5.f + characterImgHeight / 2,playerTexture.width / 4.f, playerTexture.height / 4.f }, Vector2{ static_cast<float>(playerTexture.width / 4 / 2), static_cast<float>(playerTexture.height / 4 / 2) }, 0.f, WHITE);
+	DrawTexturePro(textures[*Textures::Player], Rectangle{ 0,0, textures[*Textures::Player].width / 4.f, textures[*Textures::Player].height / 4.f / 1.5f }, Rectangle{ 5.f + characterImgWidth / 2, 5.f + characterImgHeight / 2,textures[*Textures::Player].width / 4.f, textures[*Textures::Player].height / 4.f }, Vector2{ static_cast<float>(textures[*Textures::Player].width / 4 / 2), static_cast<float>(textures[*Textures::Player].height / 4 / 2) }, 0.f, WHITE);
 
 	// health
 	DrawRectangle(5, 5 + characterImgHeight, characterOverlayWidth, (characterOverlayHeight - characterImgHeight) / 2, Color{ 136,8,8,150 });
@@ -770,7 +758,7 @@ void Logic::handleInventoryIsFull()
 {
 	if (inventory.canAddItems == false)
 	{
-		PlaySound(inventoryFull);
+		PlaySound(sounds[*Sounds::InventoryIsFull]);
 		inventory.canAddItems = true;
 	}
 }
@@ -888,11 +876,11 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 			{
 				if (questReturnValue == 1)
 				{
-					PlaySound(questDoneSound);
+					PlaySound(sounds[*Sounds::QuestDone]);
 					inventory.addGold(5);
 					questReturnValue = 6;
 					questState = QuestState::Done;
@@ -920,7 +908,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				}
 				else if (questReturnValue == 5)
 				{
-					PlaySound(questAcceptedSound);
+					PlaySound(sounds[*Sounds::QuestAccepted]);
 					questState = QuestState::Accepted;
 					questReturnValue = 4;
 				}
@@ -935,7 +923,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 			{
 				Item woodStash;
 				woodStash.id = "woodStash";
@@ -957,7 +945,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 			{
 				Item fish;
 				fish.id = "fish";
@@ -979,7 +967,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 			{
 				Item barrel;
 				barrel.id = "barrel";
@@ -1001,7 +989,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - playerTexture.width / playerFramesX / 2, playerLocation.y - playerTexture.height / playerFramesY / 2, static_cast<float>(playerTexture.width / playerFramesX), static_cast<float>(playerTexture.height / playerFramesY) }))
+					{ playerLocation.x - textures[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textures[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textures[*Textures::Player].width / playerFramesX), static_cast<float>(textures[*Textures::Player].height / playerFramesY) }))
 			{
 				level = Level::level_1;
 			}});
@@ -1276,7 +1264,7 @@ void Logic::loadGame()
 					fish.stackSize = std::stoi(inputData[i + 3]);
 					fish.quantity = std::stoi(inputData[i + 4]);
 					fish.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					fish.texture = fishTexture;
+					fish.texture = textures[*Textures::Fish];
 					inventory.addItem(fish);
 					continue;
 				}
@@ -1289,7 +1277,7 @@ void Logic::loadGame()
 					barrel.stackSize = std::stoi(inputData[i + 3]);
 					barrel.quantity = std::stoi(inputData[i + 4]);
 					barrel.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					barrel.texture = barrelTexture;
+					barrel.texture = textures[*Textures::Barrel];
 					inventory.addItem(barrel);
 					continue;
 				}
@@ -1302,7 +1290,7 @@ void Logic::loadGame()
 					woodStash.stackSize = std::stoi(inputData[i + 3]);
 					woodStash.quantity = std::stoi(inputData[i + 4]);
 					woodStash.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					woodStash.texture = woodStashTexture;
+					woodStash.texture = textures[*Textures::WoodStash];
 					inventory.addItem(woodStash);
 					continue;
 				}
@@ -1552,11 +1540,6 @@ void Logic::constructMapEntities(Texture tex0, Texture tex1, Texture tex2)
 			}
 		}
 	}
-}
-
-void Logic::updateMap()
-{
-
 }
 
 void Logic::Update()

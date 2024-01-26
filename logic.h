@@ -5,6 +5,7 @@
 #include <memory>
 #include <fstream>
 #include <string>
+#include <array>
 
 constexpr char MAX_NAME_CHAR = 6;
 
@@ -23,6 +24,38 @@ enum class QuestState : unsigned char
 	Done
 };
 
+enum class Textures : unsigned char
+{
+	Player,
+	Vendor,
+	WoodStash,
+	Bag,
+	GoldCurrency,
+	Fish,
+	Barrel,
+	Dirt,
+	Water,
+	Grass,
+	House,
+
+	Count
+};
+
+enum class Sounds : unsigned char
+{
+	QuestAccepted,
+	QuestDone,
+	CoinCollected,
+	OpenBag,
+	CloseBag,
+	InventoryIsFull,
+
+	Count
+};
+
+static constexpr int operator *(Textures t) { return int(t); }
+static constexpr int operator *(Sounds t) { return int(t); }
+
 class Scene;
 struct Sprite2DComponent;
 
@@ -40,9 +73,7 @@ private:
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
 	void createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAllGameEntity();
-	void initializeTexture(Texture& texture, const char* filePath);
 	void initializeAllTexture();
-	void initializeSound(Sound& sound, const char* filePath);
 	void initializeAllSound();
 	void drawObject();
 	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
@@ -66,32 +97,14 @@ private:
 	void energyRegenerate(double currentTime);
 	void addLevelExplore();
 	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
-	void updateMap();
 	bool isEnergyRegenerateTimerStarted = true;
 	double energyRegenerateTime = 0.0;
 	bool isHealthRegenerateTimerStarted = true;
 	double healthRegenerateTime = 0.0;
-	Texture playerTexture;
-	Texture vendorTexture;
-	Texture woodStashTexture;
-	Texture bagTexture;
-	Texture goldCurrencyTexture;
-	Texture fishTexture;
-	Texture barrelTexture;
-	Texture dirtTexture;
-	Texture waterTexture;
-	Texture grassTexture;
-	Texture houseTexture;
-	std::vector<Texture> gameTextures;
-	std::vector<Sound> gameSounds;
+	std::array< Texture, *Textures::Count > textures;
+	std::array < Sound, *Sounds::Count > sounds;
 	float playerSpeed = 0.f;
 	Vector2 playerLocation;
-	Sound questAcceptedSound;
-	Sound questDoneSound;
-	Sound coinCollectedSound;
-	Sound openBagSound;
-	Sound closeBagSound;
-	Sound inventoryFull;
 	bool isBagOpen = false;
 	bool isCharacterInfoOpen = false;
 	Music themeSong;
