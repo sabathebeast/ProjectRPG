@@ -6,15 +6,9 @@
 #include <fstream>
 #include <string>
 #include <array>
+#include "enum.h"
 
 constexpr char MAX_NAME_CHAR = 6;
-
-enum class Level : unsigned char
-{
-	level_0,
-	level_1,
-	level_2,
-};
 
 enum class QuestState : unsigned char
 {
@@ -92,15 +86,7 @@ private:
 	void handleLevels();
 	void saveGame();
 	void loadGame();
-	void setStats();
-	void healthRegenerate(double currentTime);
-	void energyRegenerate(double currentTime);
-	void addLevelExplore();
 	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
-	bool isEnergyRegenerateTimerStarted = true;
-	double energyRegenerateTime = 0.0;
-	bool isHealthRegenerateTimerStarted = true;
-	double healthRegenerateTime = 0.0;
 	std::array< Texture, *Textures::Count > textures;
 	std::array < Sound, *Sounds::Count > sounds;
 	float playerSpeed = 0.f;
@@ -113,13 +99,10 @@ private:
 	int playerFramesX = 0;
 	int playerFramesY = 0;
 	int letterCount = 0;
-	int clearViewSize = 6;
-	int clearGrayViewSize = 8;
-	int grayViewSize = 15;
+	Vector2 playerDirection = { 0.f, 0.f };
 	char name[MAX_NAME_CHAR + 1] = "\0";
 	std::string playerName;
 	bool isNameGiven = false;
-	Vector2 playerDirection = { 0.f, 0.f };
 	float mapScrollingSpeed = 10.f;
 	Level level = Level::level_0;
 	QuestState questState = QuestState::None;

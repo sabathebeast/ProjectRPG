@@ -58,6 +58,10 @@ public:
 	inline const float getHealthRegenerateRate() const { return healthRegenerateRate; }
 	inline const float getEnergyRegenerateRate() const { return energyRegenerateRate; }
 
+	void setStats();
+	void healthRegenerate(double currentTime);
+	void energyRegenerate(double currentTime);
+
 private:
 	float xpCount = 0.f;
 	float levelXP = 5000.f;
@@ -66,13 +70,20 @@ private:
 	int extraStrenght = 0;
 	int agility = 5;
 	int extraAgility = 0;
+	int agilityMultiplyer = 20;
 	int stamina = 10;
 	int extraStamina = 0;
 	float currentHealth = 100;
 	float maxHealth = 100;
+	int healthMultiplyer = 25;
 	float healthRegenerateRate = 1.5f;
 	float currentEnergy = 100;
 	float maxEnergy = 100;
 	float energyRegenerateRate = 2.5f;
 	int talentPoints = 10;
+
+	bool isHealthRegenerateTimerStarted = true;
+	double healthRegenerateTime = 0.0;
+	bool isEnergyRegenerateTimerStarted = true;
+	double energyRegenerateTime = 0.0;
 };
