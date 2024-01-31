@@ -37,16 +37,7 @@ private:
 	void createAllGameEntity();
 	void drawObject();
 	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
-	void closeBag();
-	void openBag();
 	void showQuest();
-	void bagUI();
-	void toolBarUI();
-	void characterInfoUI();
-	void characterOverlayUI();
-	void handleOpenCloseBag();
-	void handleInventoryIsFull();
-	void handleOpenCloseCharacterInfo();
 	void playerMovementAndCollisions(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
@@ -55,8 +46,6 @@ private:
 	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
 	float playerSpeed = 0.f;
 	Vector2 playerLocation;
-	bool isBagOpen = false;
-	bool isCharacterInfoOpen = false;
 	int questReturnValue = 0;
 	int goldCurrency = 0;
 	int playerFramesX = 0;

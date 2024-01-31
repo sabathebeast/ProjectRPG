@@ -20,7 +20,7 @@ void Attributes::setStats()
 	}
 	else
 	{
-		maxEnergy = (agility + extraAgility) * agilityMultiplyer;
+		maxEnergy = static_cast<float>((agility + extraAgility) * agilityMultiplyer);
 	}
 
 	if (currentHealth > maxHealth)
@@ -29,7 +29,7 @@ void Attributes::setStats()
 	}
 	else
 	{
-		maxHealth = (stamina + extraStamina) * healthMultiplyer;
+		maxHealth = static_cast<float>((stamina + extraStamina) * healthMultiplyer);
 	}
 }
 

@@ -36,6 +36,9 @@
     <ClCompile Include="attributes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="userInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scene.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="textureData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="userInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,5 @@
 #include "inventory.h"
+#include "soundData.h"
 
 void Inventory::addItem(Item& item)
 {
@@ -54,4 +55,13 @@ void Inventory::removeOrDecreaseItems(const char* rmvid, int rmvquantity)
 void Inventory::addGold(int amount)
 {
 	goldCount += amount;
+}
+
+void Inventory::handleInventoryIsFull(SoundData& soundData)
+{
+	if (canAddItems == false)
+	{
+		PlaySound(soundData.getSounds()[*Sounds::InventoryIsFull]);
+		canAddItems = true;
+	}
 }

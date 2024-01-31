@@ -2,6 +2,8 @@
 #include "raylib.h"
 #include <vector>
 
+class SoundData;
+
 enum class ItemType : unsigned char
 {
 	Food,
@@ -28,6 +30,7 @@ public:
 	void addGold(int amount);
 	inline const int getGoldCount() const { return goldCount; }
 	inline int setGoldCount(int amount) { return goldCount = amount; }
+	void handleInventoryIsFull(SoundData& soundData);
 private:
 	std::vector<Item> items;
 	int currentSize = 0;

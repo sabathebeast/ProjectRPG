@@ -136,6 +136,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="userInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="attributes.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="scene.h" />
     <ClInclude Include="soundData.h" />
     <ClInclude Include="textureData.h" />
+    <ClInclude Include="userInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
