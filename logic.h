@@ -18,38 +18,6 @@ enum class QuestState : unsigned char
 	Done
 };
 
-enum class Textures : unsigned char
-{
-	Player,
-	Vendor,
-	WoodStash,
-	Bag,
-	GoldCurrency,
-	Fish,
-	Barrel,
-	Dirt,
-	Water,
-	Grass,
-	House,
-
-	Count
-};
-
-enum class Sounds : unsigned char
-{
-	QuestAccepted,
-	QuestDone,
-	CoinCollected,
-	OpenBag,
-	CloseBag,
-	InventoryIsFull,
-
-	Count
-};
-
-static constexpr int operator *(Textures t) { return int(t); }
-static constexpr int operator *(Sounds t) { return int(t); }
-
 class Scene;
 struct Sprite2DComponent;
 
@@ -60,15 +28,13 @@ public:
 	~Logic();
 	void Render();
 	void Update();
+private:
 	const int windowWidth = GetScreenWidth();
 	const int windowHeight = GetScreenHeight();
-private:
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
 	void createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAllGameEntity();
-	void initializeAllTexture();
-	void initializeAllSound();
 	void drawObject();
 	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
 	void closeBag();
@@ -87,13 +53,10 @@ private:
 	void saveGame();
 	void loadGame();
 	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
-	std::array< Texture, *Textures::Count > textures;
-	std::array < Sound, *Sounds::Count > sounds;
 	float playerSpeed = 0.f;
 	Vector2 playerLocation;
 	bool isBagOpen = false;
 	bool isCharacterInfoOpen = false;
-	Music themeSong;
 	int questReturnValue = 0;
 	int goldCurrency = 0;
 	int playerFramesX = 0;

@@ -146,6 +146,8 @@
     <ClInclude Include="logic.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="soundData.h" />
+    <ClInclude Include="textureData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
