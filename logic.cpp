@@ -11,6 +11,13 @@
 #include "textureData.h"
 #include "soundData.h"
 #include "userInterface.h"
+#include "Lua542/include/lua.hpp"
+
+
+#ifdef _WIN32
+#pragma comment(lib, "Lua542/liblua54.a")
+#endif // _WIN32
+
 
 Scene scene;
 DialogueTree dialogue;
@@ -23,12 +30,20 @@ UserInterface userInterface;
 
 Logic::Logic()
 {
+	lua_State* L = luaL_newstate();
+	luaL_dostring(L, "playerSpeed = 500");
+	lua_getglobal(L, "playerSpeed");
+	lua_Number x = lua_tonumber(L, 1);
+	playerSpeed = x;
+	printf("%i", (int)x);
+	printf("%f", (float)playerSpeed);
+	lua_close(L);
+
 	textureData.initialize();
 	soundData.initialize();
 	constructMapEntities(textureData.getTextures()[*Textures::Grass], textureData.getTextures()[*Textures::Water], textureData.getTextures()[*Textures::Dirt]);
 	createAllGameEntity();
 	getPlayerFramesXY();
-	playerSpeed = 200.f;
 	dialogue.init();
 }
 
