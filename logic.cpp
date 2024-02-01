@@ -11,13 +11,12 @@
 #include "textureData.h"
 #include "soundData.h"
 #include "userInterface.h"
-#include "Lua542/include/lua.hpp"
+#include "LUA/include/lua.hpp"
+#include <iostream>
 
-
-#ifdef _WIN32
-#pragma comment(lib, "Lua542/liblua54.a")
-#endif // _WIN32
-
+#ifdef _WIN64
+#pragma comment(lib, "LUA/liblua54.a")
+#endif // _WIN64
 
 Scene scene;
 DialogueTree dialogue;
@@ -28,15 +27,49 @@ TextureData textureData;
 SoundData soundData;
 UserInterface userInterface;
 
+bool checkLua(lua_State* L, int r)
+{
+	if (r != LUA_OK)
+	{
+		std::string errormsg = lua_tostring(L, -1);
+		std::cout << errormsg << std::endl;
+		return false;
+	}
+	return true;
+}
+
+int lua_HostFunction(lua_State* L)
+{
+	float a = (float)lua_tonumber(L, 1);
+	float b = (float)lua_tonumber(L, 2);
+	std::cout << "[C++] HostFunction(" << a << ", " << b << ") called" << std::endl;
+	float c = a * b;
+	lua_pushnumber(L, c);
+	return 1;
+}
+
+
 Logic::Logic()
 {
 	lua_State* L = luaL_newstate();
-	luaL_dostring(L, "playerSpeed = 500");
-	lua_getglobal(L, "playerSpeed");
-	lua_Number x = lua_tonumber(L, 1);
-	playerSpeed = x;
-	printf("%i", (int)x);
-	printf("%f", (float)playerSpeed);
+	luaL_openlibs(L);
+
+	lua_register(L, "HostFunction", lua_HostFunction);
+
+	if (checkLua(L, luaL_dofile(L, "player.lua")))
+	{
+		lua_getglobal(L, "DoAThing");
+		if (lua_isfunction(L, -1))
+		{
+			lua_pushnumber(L, 5.f);
+			lua_pushnumber(L, 6.f);
+
+			if (checkLua(L,lua_pcall(L, 2, 1, 0)))
+			{
+				printf("%f", (float)lua_tonumber(L, -1));
+			}
+		}
+	}
 	lua_close(L);
 
 	textureData.initialize();
@@ -886,6 +919,21 @@ void Logic::constructMapEntities(Texture tex0, Texture tex1, Texture tex2)
 	}
 }
 
+void Logic::modifyPlayerSpeedOnRuntime()
+{
+	lua_State* L = luaL_newstate();
+
+	if (luaL_dofile(L, "player.lua") == LUA_OK)
+	{
+		lua_getglobal(L, "playerSpeed");
+		if (lua_isnumber(L, -1))
+		{
+			playerSpeed = static_cast<float>(lua_tonumber(L, -1));
+		}
+	}
+	lua_close(L);
+}
+
 void Logic::Update()
 {
 	if (!isNameGiven)
@@ -927,6 +975,7 @@ void Logic::Update()
 	}
 	else
 	{
+		modifyPlayerSpeedOnRuntime();
 		double currentTime = GetTime();
 		float deltaTime = GetFrameTime();
 		UpdateMusicStream(soundData.getThemeSong());

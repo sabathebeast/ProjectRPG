@@ -151,6 +151,12 @@
     <ClInclude Include="textureData.h" />
     <ClInclude Include="userInterface.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="player.lua">
+      <FileType>Document</FileType>
+      <DeploymentContent>true</DeploymentContent>
+    </Text>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

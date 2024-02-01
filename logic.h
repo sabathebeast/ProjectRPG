@@ -64,6 +64,8 @@ private:
 	float xScrollingOffset = 0.f;
 	float yScrollingOffset = 0.f;
 
+	void modifyPlayerSpeedOnRuntime();
+
 	template <typename T>
 	void addToSaveGame(const char* name, T arg)
 	{
