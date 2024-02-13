@@ -15,6 +15,7 @@ enum class Textures : unsigned char
 	Water,
 	Grass,
 	House,
+	Tiles,
 
 	Count
 };
@@ -36,15 +37,13 @@ public:
 	{
 		textures[*Textures::Bag] = LoadTexture("./Assets/bag.png");
 		textures[*Textures::Barrel] = LoadTexture("./Assets/barrel.png");
-		textures[*Textures::Dirt] = LoadTexture("./Map/dirt.png");
 		textures[*Textures::Fish] = LoadTexture("./Assets/fish.png");
 		textures[*Textures::GoldCurrency] = LoadTexture("./Assets/goldCurrency.png");
-		textures[*Textures::Grass] = LoadTexture("./Map/grass.png");
 		textures[*Textures::House] = LoadTexture("./Assets/house.png");
 		textures[*Textures::Player] = LoadTexture("./Assets/playerSprite.png");
 		textures[*Textures::Vendor] = LoadTexture("./Assets/adventurer_idle.png");
-		textures[*Textures::Water] = LoadTexture("./Map/water.png");
 		textures[*Textures::WoodStash] = LoadTexture("./Assets/wood_stash.png");
+		textures[*Textures::Tiles] = LoadTexture("./Assets/tiles_packed.png");
 	};
 
 	inline const std::array<Texture, *Textures::Count> getTextures() const { return textures; }

@@ -4,7 +4,8 @@
 #include <vector>
 #include "enum.h"
 
-static const int tileSize = 16;
+static const int tileWidth = 16;
+static const int tileHeight = 16;
 static const int tileRow = 70;
 static const int tileColumn = 70;
 
@@ -16,12 +17,12 @@ public:
 	Map();
 	~Map();
 
-	const int mapWidth = tileColumn * tileSize;
-	const int mapHeight = tileRow * tileSize;
-	const int mapTileSize = tileSize;
+	const int mapWidth = tileColumn * tileWidth;
+	const int mapHeight = tileRow * tileHeight;
+	const int mapTileWidth = tileWidth;
+	const int mapTileHeight = tileHeight;
 
 	void loadMap(unsigned char arr[tileRow][tileColumn]);
-	void drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction, unsigned char levelExploreMap[tileRow][tileColumn]);
 	unsigned char levelZeroExploreMap[tileRow][tileColumn] = { 0 };
 	unsigned char levelOneExploreMap[tileRow][tileColumn] = { 0 };
 	unsigned char baseMap[tileRow][tileColumn] = { 0 };

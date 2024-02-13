@@ -64,7 +64,7 @@ Logic::Logic()
 			lua_pushnumber(L, 5.f);
 			lua_pushnumber(L, 6.f);
 
-			if (checkLua(L,lua_pcall(L, 2, 1, 0)))
+			if (checkLua(L, lua_pcall(L, 2, 1, 0)))
 			{
 				printf("%f", (float)lua_tonumber(L, -1));
 			}
@@ -74,7 +74,7 @@ Logic::Logic()
 
 	textureData.initialize();
 	soundData.initialize();
-	constructMapEntities(textureData.getTextures()[*Textures::Grass], textureData.getTextures()[*Textures::Water], textureData.getTextures()[*Textures::Dirt]);
+	constructMapEntities();
 	createAllGameEntity();
 	getPlayerFramesXY();
 	dialogue.init();
@@ -101,11 +101,10 @@ void Logic::createAnimatedGameEntity(Scene& scene, float posX, float posY, Textu
 	gameEntity.addComponent<ActiveComponent>();
 }
 
-void Logic::createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag)
+void Logic::createMapEntities(Scene& scene, float posX, float posY, const char* tag)
 {
 	Entity gameEntity = scene.createEntity(tag);
 	gameEntity.addComponent<PositionComponent>(posX, posY);
-	gameEntity.addComponent<TextureComponent>(texture);
 	gameEntity.addComponent<TileComponent>();
 }
 
@@ -175,12 +174,24 @@ void Logic::createAllGameEntity()
 
 void Logic::drawObject()
 {
-	entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const TileComponent>();
-	mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const TileComponent& tile)
+	entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TileComponent>();
+	mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TileComponent& tile)
 		{
 			if (tile.isDrawable)
 			{
-				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+				//DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+
+				int tileNumber = map.map[static_cast<int>(position.y / tileHeight)][static_cast<int>(position.x / tileWidth)];
+				int tileRow = 0;
+
+				if (tileNumber > 12)
+				{
+					int times = std::floor(tileNumber / 12);
+					tileRow = times;
+					tileNumber = tileNumber - (times * 12) - 1;
+				}
+
+				DrawTexturePro(textureData.getTextures()[*Textures::Tiles], Rectangle{tileNumber * (textureData.getTextures()[*Textures::Tiles].width / 12.f), tileRow * (textureData.getTextures()[*Textures::Tiles].height / 10.f), textureData.getTextures()[*Textures::Tiles].width / 12.f,  textureData.getTextures()[*Textures::Tiles].height / 10.f }, Rectangle{ position.x + xScrollingOffset, position.y + yScrollingOffset, textureData.getTextures()[*Textures::Tiles].width / 12.f,textureData.getTextures()[*Textures::Tiles].height / 10.f }, { 0,0 }, 0.f, WHITE);
 			}
 		});
 
@@ -235,38 +246,38 @@ void Logic::Render()
 
 	if (playerDirection.x >= 0.f)
 	{
-		xScrollingOffset = playerDirection.x * map.mapTileSize;
+		xScrollingOffset = playerDirection.x * map.mapTileWidth;
 	}
 	else
 	{
-		xScrollingOffset -= (playerDirection.x * -1) * map.mapTileSize;
+		xScrollingOffset -= (playerDirection.x * -1) * map.mapTileWidth;
 	}
 	if (playerDirection.y >= 0.f)
 	{
-		yScrollingOffset = playerDirection.y * map.mapTileSize;
+		yScrollingOffset = playerDirection.y * map.mapTileHeight;
 	}
 	else
 	{
-		yScrollingOffset -= (playerDirection.y * -1) * map.mapTileSize;
+		yScrollingOffset -= (playerDirection.y * -1) * map.mapTileHeight;
 	}
 
 	handleLevels();
 	if (level == Level::level_0)
 	{
-		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
-		mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
-			{
-				//---------------- TODO: Logic for drawing tiles only in the windows size ---------------- //
-				/*if (true)
+		//entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
+		//mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
+		//	{
+		//		//---------------- TODO: Logic for drawing tiles only in the windows size ---------------- //
+		//		/*if (true)
 
-				{
-					tile.isDrawable = false;
-				}
-				else
-				{
-					tile.isDrawable = true;
-				}*/
-			});
+		//		{
+		//			tile.isDrawable = false;
+		//		}
+		//		else
+		//		{
+		//			tile.isDrawable = true;
+		//		}*/
+		//	});
 
 		entt::basic_view CollectibeView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
 		CollectibeView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
@@ -282,10 +293,10 @@ void Logic::Render()
 		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
 		mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
 			{
-				if (playerLocation.x + (playerDirection.x * tileSize) - windowWidth / 2.f > position.x &&
-					playerLocation.x + (playerDirection.x * tileSize) + windowWidth / 2.f < position.x &&
-					playerLocation.y + (playerDirection.y * tileSize) - windowHeight / 2.f > position.y &&
-					playerLocation.y + (playerDirection.y * tileSize) + windowHeight / 2.f < position.y)
+				if (playerLocation.x + (playerDirection.x * tileWidth) - windowWidth / 2.f > position.x &&
+					playerLocation.x + (playerDirection.x * tileWidth) + windowWidth / 2.f < position.x &&
+					playerLocation.y + (playerDirection.y * tileHeight) - windowHeight / 2.f > position.y &&
+					playerLocation.y + (playerDirection.y * tileHeight) + windowHeight / 2.f < position.y)
 				{
 					tile.isDrawable = false;
 				}
@@ -894,27 +905,16 @@ void Logic::loadGame()
 	inputFile.close();
 }
 
-void Logic::constructMapEntities(Texture tex0, Texture tex1, Texture tex2)
+void Logic::constructMapEntities()
 {
 	for (int row = 0; row < tileRow; row++)
 	{
 		for (int column = 0; column < tileColumn; column++)
 		{
-			float posX = static_cast<float>(column * tileSize);
-			float posY = static_cast<float>(row * tileSize);
+			float posX = static_cast<float>(column * tileWidth);
+			float posY = static_cast<float>(row * tileHeight);
 
-			if (map.map[row][column] == 0)
-			{
-				createMapEntities(scene, posX, posY, tex0, "grass");
-			}
-			else if (map.map[row][column] == 1)
-			{
-				createMapEntities(scene, posX, posY, tex1, "water");
-			}
-			else if (map.map[row][column] == 2)
-			{
-				createMapEntities(scene, posX, posY, tex0, "dirt");
-			}
+			createMapEntities(scene, posX, posY, "tile");
 		}
 	}
 }

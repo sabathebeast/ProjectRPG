@@ -8,7 +8,7 @@ Map::Map()
 {
 	std::string input;
 	// load baseMap
-	inputFile.open("baseMap.txt");
+	/*inputFile.open("baseMap.txt");
 
 	if (!inputFile.fail())
 	{
@@ -40,6 +40,34 @@ Map::Map()
 			}
 		}
 	}
+	inputFile.close();*/
+
+
+	inputFile.open("map.txt");
+
+	if (!inputFile.fail())
+	{
+		while (inputFile >> input)
+		{
+			inputData.push_back(input);
+		}
+		if (!inputData.empty())
+		{
+			int row = -1;
+			int column = 0;
+
+			for (int i = 0; i < inputData.size(); i++)
+			{
+				column++;
+				if (i % tileColumn == 0)
+				{
+					row++;
+					column = 0;
+				}
+				baseMap[row][column] = std::stoi(inputData[i]);
+			}
+		}
+	}
 	inputFile.close();
 	loadMap(baseMap);
 }
@@ -59,31 +87,6 @@ void Map::loadMap(unsigned char arr[tileRow][tileColumn])
 	}
 }
 
-void Map::drawMap(Texture tex0, Texture tex1, Texture tex2, Vector2 direction, unsigned char levelExploreMap[tileRow][tileColumn])
-{
-	for (int row = 0; row < tileRow; row++)
-	{
-		for (int column = 0; column < tileColumn; column++)
-		{
-			float posX = (column + direction.x) * tileSize;
-			float posY = (row + direction.y) * tileSize;
-
-			if (map[row][column] == 0 && levelExploreMap[row][column] > 0)
-			{
-				DrawTextureEx(tex0, { posX, posY }, 0.f, 1.f, WHITE);
-			}
-			else if (map[row][column] == 1 && levelExploreMap[row][column] > 0)
-			{
-				DrawTextureEx(tex1, { posX, posY }, 0.f, 1.f, WHITE);
-			}
-			else if (map[row][column] == 2 && levelExploreMap[row][column] > 0)
-			{
-				DrawTextureEx(tex2, { posX, posY }, 0.f, 1.f, WHITE);
-			}
-		}
-	}
-}
-
 void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, float playerDirectionY)
 {
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
@@ -91,8 +94,8 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 		{
 			if (tag.tag == "player")
 			{
-				int playerLocXGrid = static_cast<int>(position.x - (playerDirectionX * tileSize));
-				int playerLocYGrid = static_cast<int>(position.y - (playerDirectionY * tileSize));
+				int playerLocXGrid = static_cast<int>(position.x - (playerDirectionX * tileWidth));
+				int playerLocYGrid = static_cast<int>(position.y - (playerDirectionY * tileHeight));
 
 				if (level == Level::level_0)
 				{
@@ -100,11 +103,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(clearViewSize); j < clearViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+								if (levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0 || levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] > 1)
 								{
-									levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+									levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 1;
 								}
 
 							}
@@ -114,11 +117,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+								if (levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0 || levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 3)
 								{
-									levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+									levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 2;
 								}
 							}
 						}
@@ -127,11 +130,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(grayViewSize); j < grayViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+								if (levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0)
 								{
-									levelZeroExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+									levelZeroExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 3;
 								}
 							}
 						}
@@ -140,20 +143,20 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int column = 0; column < tileColumn; column++)
 						{
-							int posX = static_cast<int>((column + playerDirectionX) * tileSize);
-							int posY = static_cast<int>((row + playerDirectionY) * tileSize);
+							int posX = static_cast<int>((column + playerDirectionX) * tileWidth);
+							int posY = static_cast<int>((row + playerDirectionY) * tileHeight);
 
 							if (levelZeroExploreMap[row][column] == 0)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+								DrawRectangle(posX, posY, tileWidth, tileHeight, BLACK);
 							}
 							else if (levelZeroExploreMap[row][column] == 2)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+								DrawRectangle(posX, posY, tileWidth, tileHeight, Color{ 0,0,0,50 });
 							}
 							else if (levelZeroExploreMap[row][column] == 3)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+								DrawRectangle(posX, posY, tileWidth, tileHeight, Color{ 0,0,0,150 });
 							}
 						}
 
@@ -165,11 +168,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(clearViewSize); j < clearViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] > 1)
+								if (levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0 || levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] > 1)
 								{
-									levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 1;
+									levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 1;
 								}
 
 							}
@@ -179,11 +182,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(clearGrayViewSize); j < clearGrayViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0 || levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 3)
+								if (levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0 || levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 3)
 								{
-									levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 2;
+									levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 2;
 								}
 							}
 						}
@@ -192,11 +195,11 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int j = -(grayViewSize); j < grayViewSize; j++)
 						{
-							if (playerLocYGrid / tileSize + i >= 0 && playerLocYGrid / tileSize + i <= tileRow && playerLocXGrid / tileSize + j >= 0 && playerLocXGrid / tileSize + j <= tileColumn)
+							if (playerLocYGrid / tileHeight + i >= 0 && playerLocYGrid / tileHeight + i <= tileRow && playerLocXGrid / tileWidth + j >= 0 && playerLocXGrid / tileWidth + j <= tileColumn)
 							{
-								if (levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] == 0)
+								if (levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] == 0)
 								{
-									levelOneExploreMap[playerLocYGrid / tileSize + i][playerLocXGrid / tileSize + j] = 3;
+									levelOneExploreMap[playerLocYGrid / tileHeight + i][playerLocXGrid / tileWidth + j] = 3;
 								}
 							}
 						}
@@ -205,20 +208,20 @@ void Map::addMapExlore(const Scene& scene, Level level, float playerDirectionX, 
 					{
 						for (int column = 0; column < tileColumn; column++)
 						{
-							int posX = static_cast<int>((column + playerDirectionX) * tileSize);
-							int posY = static_cast<int>((row + playerDirectionY) * tileSize);
+							int posX = static_cast<int>((column + playerDirectionX) * tileWidth);
+							int posY = static_cast<int>((row + playerDirectionY) * tileHeight);
 
 							if (levelOneExploreMap[row][column] == 0)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, BLACK);
+								DrawRectangle(posX, posY, tileWidth, tileHeight, BLACK);
 							}
 							else if (levelOneExploreMap[row][column] == 2)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,50 });
+								DrawRectangle(posX, posY, tileWidth, tileHeight, Color{ 0,0,0,50 });
 							}
 							else if (levelOneExploreMap[row][column] == 3)
 							{
-								DrawRectangle(posX, posY, tileSize, tileSize, Color{ 0,0,0,150 });
+								DrawRectangle(posX, posY, tileWidth, tileHeight, Color{ 0,0,0,150 });
 							}
 						}
 

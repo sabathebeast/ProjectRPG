@@ -33,7 +33,7 @@ private:
 	const int windowHeight = GetScreenHeight();
 	void createBasicGameEntity(Scene& scene, float posX, float posY, Texture texture, const char* tag);
 	void createAnimatedGameEntity(Scene& scene, float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
-	void createMapEntities(Scene& scene, float posX, float posY, Texture texture, const char* tag);
+	void createMapEntities(Scene& scene, float posX, float posY, const char* tag);
 	void createAllGameEntity();
 	void drawObject();
 	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
@@ -43,7 +43,7 @@ private:
 	void handleLevels();
 	void saveGame();
 	void loadGame();
-	void constructMapEntities(Texture tex0, Texture tex1, Texture tex2);
+	void constructMapEntities();
 	float playerSpeed = 0.f;
 	Vector2 playerLocation;
 	int questReturnValue = 0;
