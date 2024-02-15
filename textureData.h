@@ -11,11 +11,9 @@ enum class Textures : unsigned char
 	GoldCurrency,
 	Fish,
 	Barrel,
-	Dirt,
-	Water,
-	Grass,
 	House,
 	Tiles,
+	Key,
 
 	Count
 };
@@ -44,6 +42,7 @@ public:
 		textures[*Textures::Vendor] = LoadTexture("./Assets/adventurer_idle.png");
 		textures[*Textures::WoodStash] = LoadTexture("./Assets/wood_stash.png");
 		textures[*Textures::Tiles] = LoadTexture("./Assets/tiles_packed.png");
+		textures[*Textures::Key] = LoadTexture("./Assets/key.png");
 	};
 
 	inline const std::array<Texture, *Textures::Count> getTextures() const { return textures; }

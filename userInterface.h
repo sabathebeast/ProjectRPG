@@ -8,6 +8,8 @@ class TextureData;
 class Attributes;
 class SoundData;
 class Inventory;
+class Scene;
+struct Vector2;
 
 class UserInterface
 {
@@ -17,11 +19,12 @@ public:
 	void openBag(SoundData& soundData);
 	void closeBag(SoundData& soundData);
 	void bagUI(SoundData& soundData, Inventory& inventory, TextureData& textureData);
-	void toolBarUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, float playerLocationY, float playerLocationX, int playerFramesY);
+	void toolBarUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, Vector2 PlayerLocation, Vector2 PlayerDirection, int playerFramesY, Inventory& inventory, Scene& scene);
 	void characterInfoUI(int windowWidth, int windowHeight, Attributes& attributes);
 	void handleOpenCloseCharacterInfo();
 
 private:
 	bool isBagOpen = false;
 	bool isCharacterInfoOpen = false;
+	bool isMouseOccupied = false;
 };

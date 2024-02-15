@@ -3,8 +3,8 @@
 
 void Inventory::addItem(Item& item)
 {
-	currentSize++;
-	if (currentSize <= maxSize)
+	currentBagSize++;
+	if (currentBagSize <= maxBagSize)
 	{
 		canAddItems = true;
 		items.push_back(item);
@@ -16,7 +16,22 @@ void Inventory::addItem(Item& item)
 	else
 	{
 		canAddItems = false;
-		currentSize--;
+		currentBagSize--;
+	}
+}
+
+void Inventory::addGear(Gear& gear)
+{
+	currentToolbarSize++;
+	if (currentToolbarSize <= maxToolbarSize)
+	{
+		canAddGear = true;
+		gears.push_back(gear);
+	}
+	else
+	{
+		canAddGear = false;
+		currentToolbarSize--;
 	}
 }
 
@@ -28,7 +43,7 @@ void Inventory::sortItems()
 		{
 			items[i].quantity = items[i].quantity + items.back().quantity;
 			items.pop_back();
-			currentSize--;
+			currentBagSize--;
 			break;
 		}
 	}

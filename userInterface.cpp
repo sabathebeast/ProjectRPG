@@ -4,6 +4,8 @@
 #include "attributes.h"
 #include "soundData.h"
 #include "inventory.h"
+#include "scene.h"
+
 
 void UserInterface::characterOverlayUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, std::string playerName)
 {
@@ -160,7 +162,7 @@ void UserInterface::bagUI(SoundData& soundData, Inventory& inventory, TextureDat
 	}
 }
 
-void UserInterface::toolBarUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, float playerLocationY, float playerLocationX, int playerFramesY)
+void UserInterface::toolBarUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, Vector2 PlayerLocation, Vector2 PlayerDirection, int playerFramesY, Inventory& inventory, Scene& scene)
 {
 	int toolBarWidth = windowWidth / 2;
 	int toolBarHeight = windowHeight / 20;
@@ -169,7 +171,7 @@ void UserInterface::toolBarUI(int windowWidth, int windowHeight, TextureData& te
 	int toolWidth = (toolBarWidth - 10 * 2) / 10;
 	int toolHeight = toolBarHeight - 4;
 
-	if (playerLocationY + static_cast<float>((textureData.getTextures()[*Textures::Player].height / playerFramesY) / 2) >= toolBarPosY && playerLocationX >= toolBarPosX && playerLocationX <= toolBarPosX + toolBarWidth)
+	if (PlayerLocation.y + static_cast<float>((textureData.getTextures()[*Textures::Player].height / playerFramesY) / 2) >= toolBarPosY && PlayerLocation.x >= toolBarPosX && PlayerLocation.x <= toolBarPosX + toolBarWidth)
 	{
 		toolBarPosY = 5;
 	}
@@ -188,6 +190,60 @@ void UserInterface::toolBarUI(int windowWidth, int windowHeight, TextureData& te
 
 	int xpText = MeasureText(TextFormat("%.0f / %.0f", attributes.getXPCount(), attributes.getLevelXP()), 10);
 	DrawText(TextFormat("%.0f / %.0f XP", attributes.getXPCount(), attributes.getLevelXP()), toolBarPosX + (toolBarWidth / 2) - xpText / 2, toolBarPosY + toolBarHeight, 10, Color{ 255,255,255,225 });
+
+	if (!inventory.gears.empty())
+	{
+		Vector2 mousePos = GetMousePosition();
+
+		for (int i = 0; i < inventory.gears.size(); i++)
+		{
+			if (mousePos.x > toolBarPosX + 5 + i * toolWidth &&
+				mousePos.x < toolBarPosX + 5 + i * toolWidth + toolWidth &&
+				mousePos.y > toolBarPosY &&
+				mousePos.y < toolBarPosY + toolBarHeight)
+			{
+				if (inventory.gears[i].isOnMouse == false && isMouseOccupied == false && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				{
+					inventory.gears[i].isOnMouse = true;
+					isMouseOccupied = true;
+				}
+				if (inventory.gears[i].isOnMouse == true && isMouseOccupied == true && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+				{
+					inventory.gears[i].isOnMouse = false;
+					isMouseOccupied = false;
+				}
+			}
+			else
+			{
+				if (inventory.gears[i].isOnMouse == true)
+				{
+					if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+					{
+						scene.createBasicGameEntity(mousePos.x - (PlayerDirection.x * 16) , mousePos.y - (PlayerDirection.y * 16), inventory.gears[i].texture, inventory.gears[i].id);
+						inventory.gears.erase(inventory.gears.begin() + i);
+						inventory.currentToolbarSize--;
+						isMouseOccupied = false;
+						continue;
+					}
+				}
+			}
+
+			float gearPositionX = 0.f;
+			float gearPositionY = 0.f;
+
+			if (inventory.gears[i].isOnMouse)
+			{
+				gearPositionX = mousePos.x;
+				gearPositionY = mousePos.y;
+			}
+			else
+			{
+				gearPositionX = static_cast<float>(toolBarPosX + 5 + i * toolWidth);
+				gearPositionY = static_cast<float>(toolBarPosY + 5);
+			}
+			DrawTexturePro(inventory.gears[i].texture, Rectangle{ 0.f, 0.f, static_cast<float>(inventory.gears[i].texture.width), static_cast<float>(inventory.gears[i].texture.height) }, Rectangle{ gearPositionX, gearPositionY, static_cast<float>(toolWidth - 5), static_cast<float>(toolHeight - 5) }, { 0.f, 0.f }, 0.f, WHITE);
+		}
+	}
 }
 
 void UserInterface::characterInfoUI(int windowWidth, int windowHeight, Attributes& attributes)

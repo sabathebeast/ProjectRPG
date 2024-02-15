@@ -20,10 +20,18 @@ struct Item
 	ItemType itemType;
 };
 
+struct Gear
+{
+	const char* id;
+	Texture texture;
+	bool isOnMouse = false;
+};
+
 class Inventory
 {
 public:
 	void addItem(Item& item);
+	void addGear(Gear& gear);
 	inline const std::vector<Item> getItems() const { return items; }
 	bool canAddItems = true;
 	void removeOrDecreaseItems(const char* rmvid, int rmvquantity);
@@ -31,10 +39,14 @@ public:
 	inline const int getGoldCount() const { return goldCount; }
 	inline int setGoldCount(int amount) { return goldCount = amount; }
 	void handleInventoryIsFull(SoundData& soundData);
+	std::vector<Gear> gears;
+	int currentToolbarSize = 0;
 private:
 	std::vector<Item> items;
-	int currentSize = 0;
-	int maxSize = 16;
+	int currentBagSize = 0;
+	int maxBagSize = 16;
+	int maxToolbarSize = 10;
+	bool canAddGear = true;
 	void sortItems();
 	int goldCount = 0;
 };
