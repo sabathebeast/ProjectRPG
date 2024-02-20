@@ -39,3 +39,11 @@ void Scene::createMapEntities(float posX, float posY, const char* tag)
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<TileComponent>();
 }
+
+void Scene::createEntitiyWithCollision(float posX, float posY, Texture texture, const char* tag)
+{
+	Entity gameEntity = createEntity(tag);
+	gameEntity.addComponent<PositionComponent>(posX, posY);
+	gameEntity.addComponent<TextureComponent>(texture);
+	gameEntity.addComponent<ColllisionComponent>();
+}

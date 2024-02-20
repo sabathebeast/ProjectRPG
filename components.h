@@ -35,3 +35,8 @@ struct TileComponent
 {
 	bool isDrawable = true;
 };
+
+struct ColllisionComponent
+{
+	bool isPlayerBehind = false;
+};

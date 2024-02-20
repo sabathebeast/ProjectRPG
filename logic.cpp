@@ -92,6 +92,7 @@ void Logic::createAllGameEntity()
 	scene.createBasicGameEntity(windowWidth - 100.f, 50.f, textureData.getTextures()[*Textures::House], "house");
 	scene.createBasicGameEntity(200, 200, textureData.getTextures()[*Textures::Key], "key");
 	scene.createBasicGameEntity(400, 400, textureData.getTextures()[*Textures::Key], "key");
+	scene.createEntitiyWithCollision(200 - textureData.getTextures()[*Textures::Tree].width / 2, 260 - textureData.getTextures()[*Textures::Tree].height / 2, textureData.getTextures()[*Textures::Tree], "tree");
 
 	loadGame();
 
@@ -158,8 +159,6 @@ void Logic::drawObject()
 		{
 			if (tile.isDrawable)
 			{
-				//DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
-
 				int tileNumber = map.map[static_cast<int>(position.y / tileHeight)][static_cast<int>(position.x / tileWidth)];
 				int tileRow = 0;
 
@@ -169,18 +168,39 @@ void Logic::drawObject()
 					tileRow = times;
 					tileNumber = tileNumber - (times * 12) - 1;
 				}
-
 				DrawTexturePro(textureData.getTextures()[*Textures::Tiles], Rectangle{ tileNumber * (textureData.getTextures()[*Textures::Tiles].width / 12.f), tileRow * (textureData.getTextures()[*Textures::Tiles].height / 10.f), textureData.getTextures()[*Textures::Tiles].width / 12.f,  textureData.getTextures()[*Textures::Tiles].height / 10.f }, Rectangle{ position.x + xScrollingOffset, position.y + yScrollingOffset, textureData.getTextures()[*Textures::Tiles].width / 12.f,textureData.getTextures()[*Textures::Tiles].height / 10.f }, { 0,0 }, 0.f, WHITE);
 			}
 		});
 
-	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const ActiveComponent>();
-	view.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const ActiveComponent& active)
+	entt::basic_view entityView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, const ActiveComponent>();
+	entityView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, const ActiveComponent& active)
 		{
 			if (active.isActive)
 			{
 				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
 			}
+		});
+
+	entt::basic_view collisionView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ColllisionComponent>();
+	collisionView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ColllisionComponent& collisionComponent)
+		{
+			if (CheckCollisionRecs({ position.x + xScrollingOffset,
+											position.y + yScrollingOffset,
+						static_cast<float>(texture.texture.width),
+						static_cast<float>(texture.texture.height * 2/3) },
+				{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+			{
+				collisionComponent.isPlayerBehind = true;
+			}
+			else
+			{
+				collisionComponent.isPlayerBehind = false;
+			}
+
+	if (collisionComponent.isPlayerBehind == false)
+	{
+		DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+	}
 		});
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
@@ -192,12 +212,21 @@ void Logic::drawObject()
 						static_cast<float>(sprite.texture.width / sprite.framesX),
 						static_cast<float>(sprite.texture.height / sprite.framesY) },
 						Rectangle{ position.x,
-								position.y,
-								static_cast<float>(sprite.texture.width / sprite.framesX),
-								static_cast<float>(sprite.texture.height / sprite.framesY) },
+									position.y,
+									static_cast<float>(sprite.texture.width / sprite.framesX),
+									static_cast<float>(sprite.texture.height / sprite.framesY) },
 				{ static_cast<float>(sprite.texture.width / sprite.framesX / 2), static_cast<float>(sprite.texture.height / sprite.framesY / 2) },
 				0.f,
 				WHITE);
+		});
+
+	entt::basic_view secondCollisionView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ColllisionComponent>();
+	secondCollisionView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ColllisionComponent& collisionComponent)
+		{
+			if (collisionComponent.isPlayerBehind == true)
+			{
+				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+			}
 		});
 }
 

@@ -14,6 +14,7 @@ enum class Textures : unsigned char
 	House,
 	Tiles,
 	Key,
+	Tree,
 
 	Count
 };
@@ -43,6 +44,7 @@ public:
 		textures[*Textures::WoodStash] = LoadTexture("./Assets/wood_stash.png");
 		textures[*Textures::Tiles] = LoadTexture("./Assets/tiles_packed.png");
 		textures[*Textures::Key] = LoadTexture("./Assets/key.png");
+		textures[*Textures::Tree] = LoadTexture("./Assets/foliageTree_green.png");
 	};
 
 	inline const std::array<Texture, *Textures::Count> getTextures() const { return textures; }
