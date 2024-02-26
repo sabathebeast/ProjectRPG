@@ -187,7 +187,7 @@ void Logic::drawObject()
 			if (CheckCollisionRecs({ position.x + xScrollingOffset,
 											position.y + yScrollingOffset,
 						static_cast<float>(texture.texture.width),
-						static_cast<float>(texture.texture.height * 2/3) },
+						static_cast<float>(texture.texture.height * 2 / 3) },
 				{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
 			{
 				collisionComponent.isPlayerBehind = true;
@@ -272,23 +272,24 @@ void Logic::Render()
 	handleLevels();
 	if (level == Level::level_0)
 	{
-		//entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
-		//mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
-		//	{
-		//		//---------------- TODO: Logic for drawing tiles only in the windows size ---------------- //
-		//		/*if (true)
+		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, TileComponent>();
+		mapView.each([this](const TagComponent& tag, const PositionComponent& position, TileComponent& tile)
+			{
+				if (position.x < playerLocation.x - (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) + xScrollingOffset ||
+					position.x > playerLocation.x + (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) - xScrollingOffset ||
+					position.y < playerLocation.y - (windowHeight / 2.f) - (playerLocation.y - windowHeight / 2.f) + yScrollingOffset ||
+					position.y > playerLocation.y + (windowHeight / 2.f - (playerLocation.y - windowHeight / 2.f)) - yScrollingOffset)
+				{
+					tile.isDrawable = false;
+				}
+				else
+				{
+					tile.isDrawable = true;
+				}
+			});
 
-		//		{
-		//			tile.isDrawable = false;
-		//		}
-		//		else
-		//		{
-		//			tile.isDrawable = true;
-		//		}*/
-		//	});
-
-		entt::basic_view CollectibeView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
-		CollectibeView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
+		entt::basic_view CollectibleView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
+		CollectibleView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, ActiveComponent& active)
 			{
 				if (tag.tag == "woodStash" || tag.tag == "fish" || tag.tag == "barrel")
 				{
@@ -298,13 +299,13 @@ void Logic::Render()
 	}
 	else
 	{
-		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, TileComponent>();
-		mapView.each([this](const TagComponent& tag, const PositionComponent& position, const TextureComponent& texture, TileComponent& tile)
+		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, TileComponent>();
+		mapView.each([this](const TagComponent& tag, const PositionComponent& position, TileComponent& tile)
 			{
-				if (playerLocation.x + (playerDirection.x * tileWidth) - windowWidth / 2.f > position.x &&
-					playerLocation.x + (playerDirection.x * tileWidth) + windowWidth / 2.f < position.x &&
-					playerLocation.y + (playerDirection.y * tileHeight) - windowHeight / 2.f > position.y &&
-					playerLocation.y + (playerDirection.y * tileHeight) + windowHeight / 2.f < position.y)
+				if (position.x < playerLocation.x - (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) + xScrollingOffset ||
+					position.x > playerLocation.x + (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) - xScrollingOffset ||
+					position.y < playerLocation.y - (windowHeight / 2.f) - (playerLocation.y - windowHeight / 2.f) + yScrollingOffset ||
+					position.y > playerLocation.y + (windowHeight / 2.f - (playerLocation.y - windowHeight / 2.f)) - yScrollingOffset)
 				{
 					tile.isDrawable = false;
 				}
