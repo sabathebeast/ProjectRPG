@@ -35,7 +35,7 @@ private:
 	void drawObject();
 	void playPlayerAnimation(Sprite2DComponent& sprite, int sourceY_multiplyer);
 	void showQuest();
-	void playerMovementAndCollisions(float deltaTime);
+	void playerMovement(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
 	void saveGame();

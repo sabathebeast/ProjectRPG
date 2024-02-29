@@ -87,7 +87,7 @@ Logic::~Logic()
 
 void Logic::createAllGameEntity()
 {
-	scene.createAnimatedGameEntity(GetScreenWidth() / 2.f, GetScreenHeight() / 2.f, textureData.getTextures()[*Textures::Player], 0, 0, 3, 4, 4, 0, 0, "player");
+	scene.createAnimatedGameEntity(windowWidth / 2.f, windowHeight / 2.f, textureData.getTextures()[*Textures::Player], 0, 0, 3, 4, 4, 0, 0, "player");
 	scene.createBasicGameEntity(122.f, 122.f, textureData.getTextures()[*Textures::Vendor], "vendor");
 	scene.createBasicGameEntity(windowWidth - 100.f, 50.f, textureData.getTextures()[*Textures::House], "house");
 	scene.createBasicGameEntity(200, 200, textureData.getTextures()[*Textures::Key], "key");
@@ -347,8 +347,8 @@ void Logic::showQuest()
 	{
 		std::string questText = "[?] Collect 10 wood sticks";
 		int questTextSize = MeasureText(questText.c_str(), 20);
-		DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-		DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, RED);
+		DrawRectangle(windowWidth - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+		DrawText(questText.c_str(), windowWidth - questTextSize - 5 + 2, 50 + 2, 20, RED);
 
 		for (auto& items : inventory.getItems())
 		{
@@ -356,9 +356,9 @@ void Logic::showQuest()
 			{
 				int questDescriptionSize = MeasureText("Wood sticks:", 20);
 				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
-				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
-				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
-				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
+				DrawRectangle(windowWidth - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
+				DrawText("Wood sticks:", windowWidth - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
+				DrawText(TextFormat("%i", items.quantity), windowWidth - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
 
 				if (items.quantity >= 10)
 				{
@@ -376,21 +376,21 @@ void Logic::showQuest()
 			{
 				std::string questText = "[=] Collect 10 wood sticks";
 				int questTextSize = MeasureText(questText.c_str(), 20);
-				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
-				DrawText(questText.c_str(), GetScreenWidth() - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
+				DrawRectangle(windowWidth - questTextSize - 5, 50, questTextSize + 2, 25, BLACK);
+				DrawText(questText.c_str(), windowWidth - questTextSize - 5 + 2, 50 + 2, 20, GREEN);
 
 				int questDescriptionSize = MeasureText("Wood sticks:", 20);
 				int questCollectibleCounter = MeasureText(TextFormat("%i", items.quantity), 20);
-				DrawRectangle(GetScreenWidth() - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
-				DrawText("Wood sticks:", GetScreenWidth() - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
-				DrawText(TextFormat("%i", items.quantity), GetScreenWidth() - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
+				DrawRectangle(windowWidth - questTextSize - 5, 50 + 25, questDescriptionSize + questCollectibleCounter + 10, 25, GRAY);
+				DrawText("Wood sticks:", windowWidth - questTextSize - 5 + 2, 50 + 25 + 2, 20, BLACK);
+				DrawText(TextFormat("%i", items.quantity), windowWidth - questTextSize - 5 + questDescriptionSize + 5, 50 + 25 + 2, 20, BLACK);
 				break;
 			}
 		}
 	}
 }
 
-void Logic::playerMovementAndCollisions(float deltaTime)
+void Logic::playerMovement(float deltaTime)
 {
 	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, Sprite2DComponent& sprite, const ActiveComponent& active)
@@ -403,13 +403,13 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 3);
 
-					if (position.y - GetScreenHeight() / 2.f - (playerDirection.y) >= 0.f && position.y <= GetScreenHeight() / 2.f)
+					if (position.y - windowHeight / 2.f - (playerDirection.y * tileHeight) >= 0.f && position.y <= windowHeight / 2.f)
 					{
 						playerDirection.y += mapScrollingSpeed * deltaTime;
 					}
 					else
 					{
-						if (position.y <= GetScreenHeight() / 2.f)
+						if (position.y <= windowHeight / 2.f)
 						{
 							playerDirection.y = 0.f;
 						}
@@ -424,7 +424,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 0);
 
-					if (position.y + GetScreenHeight() / 2.f + (playerDirection.y * -1) <= map.mapHeight - 90 && position.y >= GetScreenHeight() / 2.f)
+					if (position.y + windowHeight / 2.f + (playerDirection.y * tileHeight * -1) <= map.mapHeight - 90 && position.y >= windowHeight / 2.f)
 					{
 						playerDirection.y -= mapScrollingSpeed * deltaTime;
 					}
@@ -441,13 +441,13 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 1);
 
-					if (position.x - GetScreenWidth() / 2.f - playerDirection.x >= 0.f && position.x <= GetScreenWidth() / 2.f)
+					if (position.x - windowWidth / 2.f - playerDirection.x * tileWidth >= 0.f && position.x <= windowWidth / 2.f)
 					{
 						playerDirection.x += mapScrollingSpeed * deltaTime;
 					}
 					else
 					{
-						if (position.x <= GetScreenWidth() / 2.f)
+						if (position.x <= windowWidth / 2.f)
 						{
 							playerDirection.x = 0.f;
 						}
@@ -462,7 +462,7 @@ void Logic::playerMovementAndCollisions(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 2);
 
-					if (position.x + GetScreenWidth() / 2.f + (playerDirection.x * -1) <= map.mapWidth - 90 && position.x >= GetScreenWidth() / 2.f)
+					if (position.x + windowWidth / 2.f + (playerDirection.x * tileWidth * -1) <= map.mapWidth && position.x >= windowWidth / 2.f)
 					{
 						playerDirection.x -= mapScrollingSpeed * deltaTime;
 					}
@@ -1022,7 +1022,7 @@ void Logic::Update()
 		attributes.energyRegenerate(currentTime);
 		map.addMapExlore(scene, level, playerDirection.x, playerDirection.y);
 		userInterface.characterOverlayUI(windowWidth, windowHeight, textureData, attributes, playerName);
-		playerMovementAndCollisions(deltaTime);
+		playerMovement(deltaTime);
 		showQuest();
 		userInterface.bagUI(soundData, inventory, textureData);
 		userInterface.toolBarUI(windowWidth, windowHeight, textureData, attributes, playerLocation, playerDirection, playerFramesY, inventory, scene);

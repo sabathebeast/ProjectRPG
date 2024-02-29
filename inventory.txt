@@ -1,2 +1,2 @@
-barrel : 1 10 10 1
-fish : 1 10 10 0
+fish : 1 10 7 0
+barrel : 1 10 7 1

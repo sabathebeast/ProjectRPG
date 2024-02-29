@@ -4,7 +4,7 @@
 
 int main()
 {
-	InitWindow(1024, 1024, "ProjectRPG");
+	InitWindow(560, 560, "ProjectRPG");
 
 	Logic logic = Logic();
 
