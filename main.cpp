@@ -1,10 +1,9 @@
 #include "raylib.h"
 #include "logic.h"
 
-
 int main()
 {
-	InitWindow(560, 560, "ProjectRPG");
+	InitWindow(Logic::windowWidth, Logic::windowHeight, "ProjectRPG");
 
 	Logic logic = Logic();
 

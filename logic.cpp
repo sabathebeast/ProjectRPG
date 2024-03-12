@@ -48,7 +48,6 @@ int lua_HostFunction(lua_State* L)
 	return 1;
 }
 
-
 Logic::Logic()
 {
 	lua_State* L = luaL_newstate();
@@ -92,7 +91,7 @@ void Logic::createAllGameEntity()
 	scene.createBasicGameEntity(windowWidth - 100.f, 50.f, textureData.getTextures()[*Textures::House], "house");
 	scene.createBasicGameEntity(200, 200, textureData.getTextures()[*Textures::Key], "key");
 	scene.createBasicGameEntity(400, 400, textureData.getTextures()[*Textures::Key], "key");
-	scene.createEntitiyWithCollision(200 - textureData.getTextures()[*Textures::Tree].width / 2, 260 - textureData.getTextures()[*Textures::Tree].height / 2, textureData.getTextures()[*Textures::Tree], "tree");
+	scene.createEntitiyWithCollision(200 - textureData.getTextures()[*Textures::Tree].width / 2.f, 260 - textureData.getTextures()[*Textures::Tree].height / 2.f, textureData.getTextures()[*Textures::Tree], "tree");
 
 	loadGame();
 
@@ -104,8 +103,8 @@ void Logic::createAllGameEntity()
 			{
 				for (int a = 0; a < 10 - inventory.getItems()[i].quantity; a++)
 				{
-					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].width, map.mapWidth - textureData.getTextures()[*Textures::WoodStash].width);
-					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].height, map.mapHeight - textureData.getTextures()[*Textures::WoodStash].height);
+					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].width, Map::mapWidth - textureData.getTextures()[*Textures::WoodStash].width);
+					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].height, Map::mapHeight - textureData.getTextures()[*Textures::WoodStash].height);
 					scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::WoodStash], "woodStash");
 				}
 			}
@@ -113,8 +112,8 @@ void Logic::createAllGameEntity()
 			{
 				for (int b = 0; b < 10 - inventory.getItems()[i].quantity; b++)
 				{
-					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].width, map.mapWidth - textureData.getTextures()[*Textures::Fish].width);
-					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].height, map.mapHeight - textureData.getTextures()[*Textures::Fish].height);
+					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].width, Map::mapWidth - textureData.getTextures()[*Textures::Fish].width);
+					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].height, Map::mapHeight - textureData.getTextures()[*Textures::Fish].height);
 					scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::Fish], "fish");
 				}
 			}
@@ -122,8 +121,8 @@ void Logic::createAllGameEntity()
 			{
 				for (int c = 0; c < 10 - inventory.getItems()[i].quantity; c++)
 				{
-					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].width, map.mapWidth - textureData.getTextures()[*Textures::Barrel].width);
-					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].height, map.mapHeight - textureData.getTextures()[*Textures::Barrel].height);
+					int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].width, Map::mapWidth - textureData.getTextures()[*Textures::Barrel].width);
+					int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].height, Map::mapHeight - textureData.getTextures()[*Textures::Barrel].height);
 					scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::Barrel], "barrel");
 				}
 			}
@@ -133,20 +132,20 @@ void Logic::createAllGameEntity()
 	{
 		for (int a = 0; a < 10; a++)
 		{
-			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].width, map.mapWidth - textureData.getTextures()[*Textures::WoodStash].width);
-			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].height, map.mapHeight - textureData.getTextures()[*Textures::WoodStash].height);
+			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].width, Map::mapWidth - textureData.getTextures()[*Textures::WoodStash].width);
+			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::WoodStash].height, Map::mapHeight - textureData.getTextures()[*Textures::WoodStash].height);
 			scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::WoodStash], "woodStash");
 		}
 		for (int b = 0; b < 10; b++)
 		{
-			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].width, map.mapWidth - textureData.getTextures()[*Textures::Fish].width);
-			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].height, map.mapHeight - textureData.getTextures()[*Textures::Fish].height);
+			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].width, Map::mapWidth - textureData.getTextures()[*Textures::Fish].width);
+			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Fish].height, Map::mapHeight - textureData.getTextures()[*Textures::Fish].height);
 			scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::Fish], "fish");
 		}
 		for (int c = 0; c < 10; c++)
 		{
-			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].width, map.mapWidth - textureData.getTextures()[*Textures::Barrel].width);
-			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].height, map.mapHeight - textureData.getTextures()[*Textures::Barrel].height);
+			int RandomX = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].width, Map::mapWidth - textureData.getTextures()[*Textures::Barrel].width);
+			int RandomY = GetRandomValue(0 + textureData.getTextures()[*Textures::Barrel].height, Map::mapHeight - textureData.getTextures()[*Textures::Barrel].height);
 			scene.createBasicGameEntity(static_cast<float>(RandomX), static_cast<float>(RandomY), textureData.getTextures()[*Textures::Barrel], "barrel");
 		}
 	}
@@ -159,7 +158,7 @@ void Logic::drawObject()
 		{
 			if (tile.isDrawable)
 			{
-				int tileNumber = map.map[static_cast<int>(position.y / tileHeight)][static_cast<int>(position.x / tileWidth)];
+				int tileNumber = map.getMap()[static_cast<int>(position.y / Map::tileHeight)][static_cast<int>(position.x / Map::tileWidth)];
 				int tileRow = 0;
 
 				if (tileNumber > 12)
@@ -197,10 +196,10 @@ void Logic::drawObject()
 				collisionComponent.isPlayerBehind = false;
 			}
 
-	if (collisionComponent.isPlayerBehind == false)
-	{
-		DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
-	}
+			if (collisionComponent.isPlayerBehind == false)
+			{
+				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+			}
 		});
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
@@ -254,19 +253,19 @@ void Logic::Render()
 
 	if (playerDirection.x >= 0.f)
 	{
-		xScrollingOffset = playerDirection.x * map.mapTileWidth;
+		xScrollingOffset = playerDirection.x * Map::tileWidth;
 	}
 	else
 	{
-		xScrollingOffset -= (playerDirection.x * -1) * map.mapTileWidth;
+		xScrollingOffset -= (playerDirection.x * -1) * Map::tileWidth;
 	}
 	if (playerDirection.y >= 0.f)
 	{
-		yScrollingOffset = playerDirection.y * map.mapTileHeight;
+		yScrollingOffset = playerDirection.y * Map::tileHeight;
 	}
 	else
 	{
-		yScrollingOffset -= (playerDirection.y * -1) * map.mapTileHeight;
+		yScrollingOffset -= (playerDirection.y * -1) * Map::tileHeight;
 	}
 
 	handleLevels();
@@ -403,7 +402,7 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 3);
 
-					if (position.y - windowHeight / 2.f - (playerDirection.y * tileHeight) >= 0.f && position.y <= windowHeight / 2.f)
+					if (position.y - windowHeight / 2.f - (playerDirection.y * Map::tileHeight) >= 0.f && position.y <= windowHeight / 2.f)
 					{
 						playerDirection.y += mapScrollingSpeed * deltaTime;
 					}
@@ -424,7 +423,7 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 0);
 
-					if (position.y + windowHeight / 2.f + (playerDirection.y * tileHeight * -1) <= map.mapHeight - 90 && position.y >= windowHeight / 2.f)
+					if (position.y + windowHeight / 2.f + (playerDirection.y * Map::tileHeight * -1) <= Map::mapHeight - 90 && position.y >= windowHeight / 2.f)
 					{
 						playerDirection.y -= mapScrollingSpeed * deltaTime;
 					}
@@ -441,7 +440,7 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 1);
 
-					if (position.x - windowWidth / 2.f - playerDirection.x * tileWidth >= 0.f && position.x <= windowWidth / 2.f)
+					if (position.x - windowWidth / 2.f - playerDirection.x * Map::tileWidth >= 0.f && position.x <= windowWidth / 2.f)
 					{
 						playerDirection.x += mapScrollingSpeed * deltaTime;
 					}
@@ -462,7 +461,7 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 2);
 
-					if (position.x + windowWidth / 2.f + (playerDirection.x * tileWidth * -1) <= map.mapWidth && position.x >= windowWidth / 2.f)
+					if (position.x + windowWidth / 2.f + (playerDirection.x * Map::tileWidth * -1) <= Map::mapWidth && position.x >= windowWidth / 2.f)
 					{
 						playerDirection.x -= mapScrollingSpeed * deltaTime;
 					}
@@ -911,7 +910,6 @@ void Logic::loadGame()
 				}
 				else if (inputData[i] == "barrel")
 				{
-
 					Item barrel;
 					barrel.id = "barrel";
 					barrel.isStackable = std::stoi(inputData[i + 2]);
@@ -924,7 +922,6 @@ void Logic::loadGame()
 				}
 				else if (inputData[i] == "woodStash")
 				{
-
 					Item woodStash;
 					woodStash.id = "woodStash";
 					woodStash.isStackable = std::stoi(inputData[i + 2]);
@@ -937,20 +934,18 @@ void Logic::loadGame()
 				}
 			}
 		}
-
-
 	}
 	inputFile.close();
 }
 
 void Logic::constructMapEntities()
 {
-	for (int row = 0; row < tileRow; row++)
+	for (int row = 0; row < Map::tileRow; row++)
 	{
-		for (int column = 0; column < tileColumn; column++)
+		for (int column = 0; column < Map::tileColumn; column++)
 		{
-			float posX = static_cast<float>(column * tileWidth);
-			float posY = static_cast<float>(row * tileHeight);
+			float posX = static_cast<float>(column * Map::tileWidth);
+			float posY = static_cast<float>(row * Map::tileHeight);
 
 			scene.createMapEntities(posX, posY, "tile");
 		}
@@ -974,7 +969,7 @@ void Logic::modifyPlayerSpeedOnRuntime()
 
 void Logic::Update()
 {
-	if (!isNameGiven)
+	if (!isNameGiven && inMainMenu)
 	{
 		int textBoxWidth = windowWidth / 2;
 		int textBoxHeight = windowHeight / 14;

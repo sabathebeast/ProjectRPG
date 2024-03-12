@@ -6,7 +6,6 @@
 #include "inventory.h"
 #include "scene.h"
 
-
 void UserInterface::characterOverlayUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, std::string playerName)
 {
 	int characterOverlayWidth = windowWidth / 5;
@@ -123,7 +122,6 @@ void UserInterface::bagUI(SoundData& soundData, Inventory& inventory, TextureDat
 
 				if (!inventory.getItems().empty() && inventory.getItems().size() > j + i * bagRow)
 				{
-					//DrawTexture(inventory.getItems()[j + i * bagRow].texture, inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), WHITE);
 					DrawTexturePro(inventory.getItems()[j + i * bagRow].texture, Rectangle{ 0.f,0.f,(float)inventory.getItems()[j + i * bagRow].texture.width, (float)inventory.getItems()[j + i * bagRow].texture.height }, Rectangle{ (float)inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1) ,(float)inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1),(float)inventoryWidth / bagRow - 1,(float)(inventoryHeight - headerOffset) / bagColumn - 1 }, { 0.f,0.f }, 0.f, WHITE);
 					DrawText(TextFormat("%i", inventory.getItems()[j + i * bagRow].quantity), inventoryPositionX + 3 + (j * (inventoryWidth / bagRow) - 1), inventoryPositionY + headerOffset + 1 + (i * (inventoryHeight - headerOffset) / bagColumn - 1), 20, WHITE);
 
@@ -219,7 +217,7 @@ void UserInterface::toolBarUI(int windowWidth, int windowHeight, TextureData& te
 				{
 					if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 					{
-						scene.createBasicGameEntity(mousePos.x - (PlayerDirection.x * 16) , mousePos.y - (PlayerDirection.y * 16), inventory.gears[i].texture, inventory.gears[i].id);
+						scene.createBasicGameEntity(mousePos.x - (PlayerDirection.x * 16), mousePos.y - (PlayerDirection.y * 16), inventory.gears[i].texture, inventory.gears[i].id);
 						inventory.gears.erase(inventory.gears.begin() + i);
 						inventory.currentToolbarSize--;
 						isMouseOccupied = false;

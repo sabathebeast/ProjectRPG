@@ -8,8 +8,8 @@ class Scene
 {
 public:
 	friend class Entity;
-	Scene();
-	~Scene();
+	Scene() {};
+	~Scene() {};
 
 	entt::registry registry;
 

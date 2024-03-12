@@ -1,4 +1,5 @@
 #pragma once
+
 #include "raylib.h"
 #include <vector>
 
@@ -12,7 +13,7 @@ enum class ItemType : unsigned char
 
 struct Item
 {
-	const char* id = 0;
+	const char* id = "";
 	bool isStackable = false;
 	int stackSize = 0;
 	int quantity = 0;
@@ -22,7 +23,7 @@ struct Item
 
 struct Gear
 {
-	const char* id;
+	const char* id = "";
 	Texture texture;
 	bool isOnMouse = false;
 };
@@ -30,23 +31,28 @@ struct Gear
 class Inventory
 {
 public:
-	void addItem(Item& item);
-	void addGear(Gear& gear);
-	inline const std::vector<Item> getItems() const { return items; }
+	int currentToolbarSize = 0;
+	std::vector<Gear> gears;
 	bool canAddItems = true;
-	void removeOrDecreaseItems(const char* rmvid, int rmvquantity);
-	void addGold(int amount);
+
+	inline const std::vector<Item> getItems() const { return items; }
 	inline const int getGoldCount() const { return goldCount; }
 	inline int setGoldCount(int amount) { return goldCount = amount; }
+
+	void addItem(Item& item);
+	void addGear(Gear& gear);
+	void removeOrDecreaseItems(const char* rmvid, int rmvquantity);
+	void addGold(int amount);
 	void handleInventoryIsFull(SoundData& soundData);
-	std::vector<Gear> gears;
-	int currentToolbarSize = 0;
+
 private:
-	std::vector<Item> items;
 	int currentBagSize = 0;
 	int maxBagSize = 16;
 	int maxToolbarSize = 10;
-	bool canAddGear = true;
-	void sortItems();
 	int goldCount = 0;
+	bool canAddGear = true;
+
+	std::vector<Item> items;
+
+	void sortItems();
 };

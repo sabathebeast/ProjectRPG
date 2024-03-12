@@ -1,8 +1,6 @@
 #pragma once
-#include <string>
 
-static const int bagRow = 4;
-static const int bagColumn = 4;
+#include <string>
 
 class TextureData;
 class Attributes;
@@ -24,6 +22,8 @@ public:
 	void handleOpenCloseCharacterInfo();
 
 private:
+	int bagRow = 4;
+	int bagColumn = 4;
 	bool isBagOpen = false;
 	bool isCharacterInfoOpen = false;
 	bool isMouseOccupied = false;

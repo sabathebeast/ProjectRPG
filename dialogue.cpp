@@ -14,10 +14,6 @@ DialogueOption::DialogueOption(std::string Text, int ReturnCode, std::shared_ptr
 	nextNode = NextNode;
 }
 
-DialogueTree::DialogueTree()
-{
-}
-
 void DialogueTree::init()
 {
 	std::shared_ptr< DialogueNode> node0 = std::make_shared<DialogueNode>("Hello wonderer!");
