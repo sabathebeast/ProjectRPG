@@ -31,6 +31,10 @@ struct Gear
 class Inventory
 {
 public:
+	Inventory() {}
+	~Inventory() {}
+	friend class GameState;
+
 	int currentToolbarSize = 0;
 	std::vector<Gear> gears;
 	bool canAddItems = true;

@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="attributes.cpp" />
     <ClCompile Include="dialogue.cpp" />
+    <ClCompile Include="gameState.cpp" />
     <ClCompile Include="inventory.cpp" />
     <ClCompile Include="logic.cpp" />
     <ClCompile Include="main.cpp" />
@@ -144,9 +145,11 @@
     <ClInclude Include="dialogue.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="enum.h" />
+    <ClInclude Include="gameState.h" />
     <ClInclude Include="inventory.h" />
     <ClInclude Include="logic.h" />
     <ClInclude Include="map.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="soundData.h" />
     <ClInclude Include="textureData.h" />

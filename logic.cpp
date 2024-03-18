@@ -3,7 +3,6 @@
 #include "entity.h"
 #include "components.h"
 #include "dialogue.h"
-#include "raymath.h"
 #include "inventory.h"
 #include "map.h"
 #include <string>
@@ -13,6 +12,8 @@
 #include "userInterface.h"
 #include "LUA/include/lua.hpp"
 #include <iostream>
+#include "gameState.h"
+#include "player.h"
 
 #ifdef _WIN64
 #pragma comment(lib, "LUA/liblua54.a")
@@ -26,6 +27,8 @@ Attributes attributes;
 TextureData textureData;
 SoundData soundData;
 UserInterface userInterface;
+GameState gameState;
+Player player;
 
 bool checkLua(lua_State* L, int r)
 {
@@ -71,18 +74,6 @@ Logic::Logic()
 	}
 	lua_close(L);
 
-	inputFile.open("saveGame.txt");
-	std::string input;
-
-	if (!inputFile.fail())
-	{
-		while (inputFile >> input)
-		{
-			inputData.push_back(input);
-		}
-	}
-	inputFile.close();
-
 	textureData.initialize();
 	soundData.initialize();
 	constructMapEntities();
@@ -93,7 +84,7 @@ Logic::Logic()
 
 Logic::~Logic()
 {
-	saveGame();
+	gameState.saveGame(inventory, player, questReturnValue, attributes);
 }
 
 void Logic::createAllGameEntity()
@@ -105,17 +96,15 @@ void Logic::createAllGameEntity()
 	scene.createBasicGameEntity(400, 400, textureData.getTextures()[*Textures::Key], "key");
 	scene.createEntitiyWithCollision(200 - textureData.getTextures()[*Textures::Tree].width / 2.f, 260 - textureData.getTextures()[*Textures::Tree].height / 2.f, textureData.getTextures()[*Textures::Tree], "tree");
 
-	//loadGame();
-
-	addEverythingToSaveGame();
+	gameState.loadGame(inventory, textureData, player, questReturnValue, attributes);
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
 			if (tag.tag == "player")
 			{
-				position.x = playerLocation.x;
-				position.y = playerLocation.y;
+				position.x = player.location.x;
+				position.y = player.location.y;
 			}
 		});
 
@@ -211,7 +200,7 @@ void Logic::drawObject()
 											position.y + yScrollingOffset,
 						static_cast<float>(texture.texture.width),
 						static_cast<float>(texture.texture.height * 2 / 3) },
-				{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+				{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				collisionComponent.isPlayerBehind = true;
 			}
@@ -275,21 +264,21 @@ void Logic::Render()
 	xScrollingOffset = 0.f;
 	yScrollingOffset = 0.f;
 
-	if (playerDirection.x >= 0.f)
+	if (player.direction.x >= 0.f)
 	{
-		xScrollingOffset = playerDirection.x * Map::tileWidth;
+		xScrollingOffset = player.direction.x * Map::tileWidth;
 	}
 	else
 	{
-		xScrollingOffset -= (playerDirection.x * -1) * Map::tileWidth;
+		xScrollingOffset -= (player.direction.x * -1) * Map::tileWidth;
 	}
-	if (playerDirection.y >= 0.f)
+	if (player.direction.y >= 0.f)
 	{
-		yScrollingOffset = playerDirection.y * Map::tileHeight;
+		yScrollingOffset = player.direction.y * Map::tileHeight;
 	}
 	else
 	{
-		yScrollingOffset -= (playerDirection.y * -1) * Map::tileHeight;
+		yScrollingOffset -= (player.direction.y * -1) * Map::tileHeight;
 	}
 
 	handleLevels();
@@ -298,10 +287,10 @@ void Logic::Render()
 		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, TileComponent>();
 		mapView.each([this](const TagComponent& tag, const PositionComponent& position, TileComponent& tile)
 			{
-				if (position.x < playerLocation.x - (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) + xScrollingOffset ||
-					position.x > playerLocation.x + (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) - xScrollingOffset ||
-					position.y < playerLocation.y - (windowHeight / 2.f) - (playerLocation.y - windowHeight / 2.f) + yScrollingOffset ||
-					position.y > playerLocation.y + (windowHeight / 2.f - (playerLocation.y - windowHeight / 2.f)) - yScrollingOffset)
+				if (position.x < player.location.x - (windowWidth / 2.f) - (player.location.x - windowWidth / 2.f) + xScrollingOffset ||
+					position.x > player.location.x + (windowWidth / 2.f) - (player.location.x - windowWidth / 2.f) - xScrollingOffset ||
+					position.y < player.location.y - (windowHeight / 2.f) - (player.location.y - windowHeight / 2.f) + yScrollingOffset ||
+					position.y > player.location.y + (windowHeight / 2.f - (player.location.y - windowHeight / 2.f)) - yScrollingOffset)
 				{
 					tile.isDrawable = false;
 				}
@@ -325,10 +314,10 @@ void Logic::Render()
 		entt::basic_view mapView = scene.registry.view<const TagComponent, const PositionComponent, TileComponent>();
 		mapView.each([this](const TagComponent& tag, const PositionComponent& position, TileComponent& tile)
 			{
-				if (position.x < playerLocation.x - (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) + xScrollingOffset ||
-					position.x > playerLocation.x + (windowWidth / 2.f) - (playerLocation.x - windowWidth / 2.f) - xScrollingOffset ||
-					position.y < playerLocation.y - (windowHeight / 2.f) - (playerLocation.y - windowHeight / 2.f) + yScrollingOffset ||
-					position.y > playerLocation.y + (windowHeight / 2.f - (playerLocation.y - windowHeight / 2.f)) - yScrollingOffset)
+				if (position.x < player.location.x - (windowWidth / 2.f) - (player.location.x - windowWidth / 2.f) + xScrollingOffset ||
+					position.x > player.location.x + (windowWidth / 2.f) - (player.location.x - windowWidth / 2.f) - xScrollingOffset ||
+					position.y < player.location.y - (windowHeight / 2.f) - (player.location.y - windowHeight / 2.f) + yScrollingOffset ||
+					position.y > player.location.y + (windowHeight / 2.f - (player.location.y - windowHeight / 2.f)) - yScrollingOffset)
 				{
 					tile.isDrawable = false;
 				}
@@ -350,7 +339,7 @@ void Logic::Render()
 											position.y + yScrollingOffset,
 						static_cast<float>(texture.texture.width),
 						static_cast<float>(texture.texture.height) },
-						{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+						{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 					{
 						level = Level::level_0;
 						position.x = windowWidth - 100.f;
@@ -418,7 +407,7 @@ void Logic::playerMovement(float deltaTime)
 	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, Sprite2DComponent, const ActiveComponent>();
 	playerView.each([this, &deltaTime](const TagComponent& tag, PositionComponent& position, Sprite2DComponent& sprite, const ActiveComponent& active)
 		{
-			mapScrollingSpeed = playerSpeed / 20;
+			map.setMapScollringSpeed(player.speed / 20);
 
 			if (tag.tag == "player")
 			{
@@ -426,20 +415,20 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 3);
 
-					if (position.y - windowHeight / 2.f - (playerDirection.y * Map::tileHeight) >= 0.f && position.y <= windowHeight / 2.f)
+					if (position.y - windowHeight / 2.f - (player.direction.y * Map::tileHeight) >= 0.f && position.y <= windowHeight / 2.f)
 					{
-						playerDirection.y += mapScrollingSpeed * deltaTime;
+						player.direction.y += map.getMapScrollingSpeed() * deltaTime;
 					}
 					else
 					{
 						if (position.y <= windowHeight / 2.f)
 						{
-							playerDirection.y = 0.f;
+							player.direction.y = 0.f;
 						}
-						position.y -= playerSpeed * deltaTime;
-						if (position.y - static_cast<float>(sprite.texture.height) / playerFramesY / 2 <= 0)
+						position.y -= player.speed * deltaTime;
+						if (position.y - static_cast<float>(sprite.texture.height) / player.framesY / 2 <= 0)
 						{
-							position.y = 0.f + static_cast<float>(sprite.texture.height) / playerFramesY / 2;
+							position.y = 0.f + static_cast<float>(sprite.texture.height) / player.framesY / 2;
 						}
 					}
 				}
@@ -447,16 +436,16 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 0);
 
-					if (position.y + windowHeight / 2.f + (playerDirection.y * Map::tileHeight * -1) <= Map::mapHeight - 90 && position.y >= windowHeight / 2.f)
+					if (position.y + windowHeight / 2.f + (player.direction.y * Map::tileHeight * -1) <= Map::mapHeight - 90 && position.y >= windowHeight / 2.f)
 					{
-						playerDirection.y -= mapScrollingSpeed * deltaTime;
+						player.direction.y -= map.getMapScrollingSpeed() * deltaTime;
 					}
 					else
 					{
-						position.y += playerSpeed * deltaTime;
-						if (position.y + static_cast<float>(sprite.texture.height) / playerFramesY / 2 > windowHeight)
+						position.y += player.speed * deltaTime;
+						if (position.y + static_cast<float>(sprite.texture.height) / player.framesY / 2 > windowHeight)
 						{
-							position.y = static_cast<float>(windowHeight - sprite.texture.height / playerFramesY / 2);
+							position.y = static_cast<float>(windowHeight - sprite.texture.height / player.framesY / 2);
 						}
 					}
 				}
@@ -464,20 +453,20 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 1);
 
-					if (position.x - windowWidth / 2.f - playerDirection.x * Map::tileWidth >= 0.f && position.x <= windowWidth / 2.f)
+					if (position.x - windowWidth / 2.f - player.direction.x * Map::tileWidth >= 0.f && position.x <= windowWidth / 2.f)
 					{
-						playerDirection.x += mapScrollingSpeed * deltaTime;
+						player.direction.x += map.getMapScrollingSpeed() * deltaTime;
 					}
 					else
 					{
 						if (position.x <= windowWidth / 2.f)
 						{
-							playerDirection.x = 0.f;
+							player.direction.x = 0.f;
 						}
-						position.x -= playerSpeed * deltaTime;
-						if (position.x - static_cast<float>(sprite.texture.width) / playerFramesX / 2 <= 0.f)
+						position.x -= player.speed * deltaTime;
+						if (position.x - static_cast<float>(sprite.texture.width) / player.framesX / 2 <= 0.f)
 						{
-							position.x = 0.f + static_cast<float>(sprite.texture.width) / playerFramesX / 2;
+							position.x = 0.f + static_cast<float>(sprite.texture.width) / player.framesX / 2;
 						}
 					}
 				}
@@ -485,20 +474,20 @@ void Logic::playerMovement(float deltaTime)
 				{
 					playPlayerAnimation(sprite, 2);
 
-					if (position.x + windowWidth / 2.f + (playerDirection.x * Map::tileWidth * -1) <= Map::mapWidth && position.x >= windowWidth / 2.f)
+					if (position.x + windowWidth / 2.f + (player.direction.x * Map::tileWidth * -1) <= Map::mapWidth && position.x >= windowWidth / 2.f)
 					{
-						playerDirection.x -= mapScrollingSpeed * deltaTime;
+						player.direction.x -= map.getMapScrollingSpeed() * deltaTime;
 					}
 					else
 					{
-						position.x += playerSpeed * deltaTime;
-						if (position.x + static_cast<float>(sprite.texture.width) / playerFramesX / 2 >= windowWidth)
+						position.x += player.speed * deltaTime;
+						if (position.x + static_cast<float>(sprite.texture.width) / player.framesX / 2 >= windowWidth)
 						{
-							position.x = static_cast<float>(windowWidth - sprite.texture.width / playerFramesX / 2);
+							position.x = static_cast<float>(windowWidth - sprite.texture.width / player.framesX / 2);
 						}
 					}
 				}
-				playerLocation = { position.x, position.y };
+				player.location = { position.x, position.y };
 			}});
 
 	entt::basic_view view = scene.registry.view<const TagComponent, const PositionComponent, const TextureComponent, ActiveComponent>();
@@ -511,7 +500,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				if (questReturnValue == 1)
 				{
@@ -558,7 +547,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				Item woodStash;
 				woodStash.id = "woodStash";
@@ -580,7 +569,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				Item fish;
 				fish.id = "fish";
@@ -602,7 +591,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				Item barrel;
 				barrel.id = "barrel";
@@ -624,7 +613,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				level = Level::level_1;
 			}
@@ -634,7 +623,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				Gear key;
 				key.id = "key";
@@ -648,7 +637,7 @@ void Logic::playerMovement(float deltaTime)
 										position.y + yScrollingOffset,
 					static_cast<float>(texture.texture.width),
 					static_cast<float>(texture.texture.height) },
-					{ playerLocation.x - textureData.getTextures()[*Textures::Player].width / playerFramesX / 2, playerLocation.y - textureData.getTextures()[*Textures::Player].height / playerFramesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / playerFramesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / playerFramesY) }))
+					{ player.location.x - textureData.getTextures()[*Textures::Player].width / player.framesX / 2, player.location.y - textureData.getTextures()[*Textures::Player].height / player.framesY / 2, static_cast<float>(textureData.getTextures()[*Textures::Player].width / player.framesX), static_cast<float>(textureData.getTextures()[*Textures::Player].height / player.framesY) }))
 			{
 				Gear keyy;
 				keyy.id = "keyy";
@@ -666,8 +655,8 @@ void Logic::getPlayerFramesXY()
 		{
 			if (tag.tag == "player")
 			{
-				playerFramesX = sprite.framesX;
-				playerFramesY = sprite.framesY;
+				player.framesX = sprite.framesX;
+				player.framesY = sprite.framesY;
 			}
 		});
 }
@@ -722,223 +711,6 @@ void Logic::handleLevels()
 		});
 }
 
-void Logic::saveGame()
-{
-	saveTheGame = true;
-
-	outputFile.open("saveGame.txt");
-	if (!outputFile.fail())
-	{
-		addEverythingToSaveGame();
-	}
-	outputFile.close();
-
-	outputFile.open("inventory.txt");
-	if (!outputFile.fail())
-	{
-		for (int i = 0; i < inventory.getItems().size(); i++)
-		{
-			addToInventory(inventory.getItems()[i].id, inventory.getItems()[i].isStackable, inventory.getItems()[i].stackSize, inventory.getItems()[i].quantity, (int)inventory.getItems()[i].itemType);
-		}
-	}
-	outputFile.close();
-}
-
-void Logic::loadGame()
-{
-	inputFile.open("saveGame.txt");
-	std::string input;
-
-	if (!inputFile.fail())
-	{
-		while (inputFile >> input)
-		{
-			inputData.push_back(input);
-		}
-		if (!inputData.empty())
-		{
-			for (int i = 0; i < inputData.size(); i += 3)
-			{
-				if (inputData[i] == "name")
-				{
-					playerName = inputData[i + 2];
-				}
-				else if (inputData[i] == "isNameGiven")
-				{
-					if (std::stoi(inputData[i + 2]) == 1)
-					{
-						isNameGiven = true;
-					}
-					else
-					{
-						isNameGiven = false;
-					}
-				}
-				else if (inputData[i] == "goldCount")
-				{
-					inventory.setGoldCount(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "playerLocationX")
-				{
-					entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
-					playerView.each([this, &i](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
-						{
-							if (tag.tag == "player")
-							{
-								position.x = std::stof(inputData[i + 2]);
-							}
-						});
-					playerLocation.x = std::stof(inputData[i + 2]);
-				}
-				else if (inputData[i] == "playerLocationY")
-				{
-					entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
-					playerView.each([this, &i](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
-						{
-							if (tag.tag == "player")
-							{
-								position.y = std::stof(inputData[i + 2]);
-							}
-						});
-					playerLocation.y = std::stof(inputData[i + 2]);
-				}
-				else if (inputData[i] == "questReturnValue")
-				{
-					questReturnValue = std::stoi(inputData[i + 2]);
-				}
-				else if (inputData[i] == "playerDirectionX")
-				{
-					playerDirection.x = std::stof(inputData[i + 2]);
-				}
-				else if (inputData[i] == "playerDirectionY")
-				{
-					playerDirection.y = std::stof(inputData[i + 2]);
-				}
-				else if (inputData[i] == "xpCount")
-				{
-					attributes.setXPCount(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "playerLevel")
-				{
-					attributes.setPlayerLevel(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "levelXP")
-				{
-					attributes.setLevelXP(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "strenght")
-				{
-					attributes.setStrenght(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "extraStrenght")
-				{
-					attributes.setExtraStrenght(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "agility")
-				{
-					attributes.setAgility(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "extraAgility")
-				{
-					attributes.setExtraAgility(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "stamina")
-				{
-					attributes.setStamina(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "extraStamina")
-				{
-					attributes.setExtraStamina(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "currentHealth")
-				{
-					attributes.setCurrentHealth(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "maxHealth")
-				{
-					attributes.setMaxHealth(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "currentEnergy")
-				{
-					attributes.setCurrentEnergy(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "maxEnergy")
-				{
-					attributes.setMaxEnergy(std::stof(inputData[i + 2]));
-				}
-				else if (inputData[i] == "talentPoints")
-				{
-					attributes.setTalentPoints(std::stoi(inputData[i + 2]));
-				}
-				else if (inputData[i] == "level")
-				{
-					level = (Level)std::stoi(inputData[i + 2]);
-				}
-				else if (inputData[i] == "questState")
-				{
-					questState = (QuestState)std::stoi(inputData[i + 2]);
-				}
-			}
-		}
-	}
-	inputFile.close();
-
-	// load inventory
-	inputFile.open("inventory.txt");
-	inputData.clear();
-
-	if (!inputFile.fail())
-	{
-		while (inputFile >> input)
-		{
-			inputData.push_back(input);
-		}
-		if (!inputData.empty())
-		{
-			for (int i = 0; i < inputData.size(); i += 6)
-			{
-				if (inputData[i] == "fish")
-				{
-					Item fish;
-					fish.id = "fish";
-					fish.isStackable = std::stoi(inputData[i + 2]);
-					fish.stackSize = std::stoi(inputData[i + 3]);
-					fish.quantity = std::stoi(inputData[i + 4]);
-					fish.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					fish.texture = textureData.getTextures()[*Textures::Fish];
-					inventory.addItem(fish);
-					continue;
-				}
-				else if (inputData[i] == "barrel")
-				{
-					Item barrel;
-					barrel.id = "barrel";
-					barrel.isStackable = std::stoi(inputData[i + 2]);
-					barrel.stackSize = std::stoi(inputData[i + 3]);
-					barrel.quantity = std::stoi(inputData[i + 4]);
-					barrel.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					barrel.texture = textureData.getTextures()[*Textures::Barrel];
-					inventory.addItem(barrel);
-					continue;
-				}
-				else if (inputData[i] == "woodStash")
-				{
-					Item woodStash;
-					woodStash.id = "woodStash";
-					woodStash.isStackable = std::stoi(inputData[i + 2]);
-					woodStash.stackSize = std::stoi(inputData[i + 3]);
-					woodStash.quantity = std::stoi(inputData[i + 4]);
-					woodStash.itemType = (ItemType)std::stoi(inputData[i + 5]);
-					woodStash.texture = textureData.getTextures()[*Textures::WoodStash];
-					inventory.addItem(woodStash);
-					continue;
-				}
-			}
-		}
-	}
-	inputFile.close();
-}
-
 void Logic::constructMapEntities()
 {
 	for (int row = 0; row < Map::tileRow; row++)
@@ -962,43 +734,15 @@ void Logic::modifyPlayerSpeedOnRuntime()
 		lua_getglobal(L, "playerSpeed");
 		if (lua_isnumber(L, -1))
 		{
-			playerSpeed = static_cast<float>(lua_tonumber(L, -1));
+			player.speed = static_cast<float>(lua_tonumber(L, -1));
 		}
 	}
 	lua_close(L);
 }
 
-void Logic::addEverythingToSaveGame()
-{
-	addToSaveGame("name", playerName);
-	addToSaveGame("isNameGiven", isNameGiven);
-	//addToSaveGame("goldCount", );
-	addToSaveGame("playerLocationX", playerLocation.x);
-	addToSaveGame("playerLocationY", playerLocation.y);
-	addToSaveGame("questReturnValue", questReturnValue);
-	addToSaveGame("playerDirectionX", playerDirection.x);
-	addToSaveGame("playerDirectionY", playerDirection.y);
-	/*addToSaveGame("xpCount", attributes.getXPCount());
-	addToSaveGame("playerLevel", attributes.getPlayerLevel());
-	addToSaveGame("levelXP", attributes.getLevelXP());
-	addToSaveGame("strenght", attributes.getStrenght());
-	addToSaveGame("extraStrenght", attributes.getExtraStrenght());
-	addToSaveGame("agility", attributes.getAgility());
-	addToSaveGame("extraAgility", attributes.getExtraAgility());
-	addToSaveGame("stamina", attributes.getStamina());
-	addToSaveGame("extraStamina", attributes.getExtraStamina());
-	addToSaveGame("currentHealth", attributes.getCurrentHealth());
-	addToSaveGame("maxHealth", attributes.getMaxHealth());
-	addToSaveGame("currentEnergy", attributes.getCurrentEnergy());
-	addToSaveGame("maxEnergy", attributes.getMaxEnergy());
-	addToSaveGame("talentPoints", attributes.getTalentPoints());
-	addToSaveGame("questState", (int)questState);*/
-	//addToSaveGame<Level(int)>("level", level);
-}
-
 void Logic::Update()
 {
-	if (!isNameGiven && inMainMenu)
+	if (!player.isNameGiven && inMainMenu)
 	{
 		int textBoxWidth = windowWidth / 2;
 		int textBoxHeight = windowHeight / 14;
@@ -1031,8 +775,8 @@ void Logic::Update()
 		DrawText("and hit enter..", windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2 + 5, 25, BLACK);
 		if (IsKeyPressed(KEY_ENTER))
 		{
-			isNameGiven = true;
-			playerName = name;
+			player.isNameGiven = true;
+			player.name = name;
 		}
 	}
 	else
@@ -1044,12 +788,12 @@ void Logic::Update()
 		attributes.setStats();
 		attributes.healthRegenerate(currentTime);
 		attributes.energyRegenerate(currentTime);
-		map.addMapExlore(scene, level, playerDirection.x, playerDirection.y);
-		userInterface.characterOverlayUI(windowWidth, windowHeight, textureData, attributes, playerName);
+		map.addMapExlore(scene, level, player.direction.x, player.direction.y);
+		userInterface.characterOverlayUI(windowWidth, windowHeight, textureData, attributes, player.name);
 		playerMovement(deltaTime);
 		showQuest();
 		userInterface.bagUI(soundData, inventory, textureData);
-		userInterface.toolBarUI(windowWidth, windowHeight, textureData, attributes, playerLocation, playerDirection, playerFramesY, inventory, scene);
+		userInterface.toolBarUI(windowWidth, windowHeight, textureData, attributes, player.location, player.direction, player.framesY, inventory, scene);
 		userInterface.characterInfoUI(windowWidth, windowHeight, attributes);
 		inventory.handleInventoryIsFull(soundData);
 	}

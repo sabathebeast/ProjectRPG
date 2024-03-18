@@ -23,6 +23,9 @@ public:
 	void addMapExlore(const Scene& scene, Level level, float playerDirectionX, float playerDirectionY);
 
 	inline const unsigned char(&getMap())[tileRow][tileColumn] { return map; }
+	inline const float getMapScrollingSpeed() const { return mapScrollingSpeed; }
+	inline float setMapScollringSpeed(float amount) { return mapScrollingSpeed = amount; }
+	
 
 private:
 	std::ofstream outputFile;
@@ -37,6 +40,7 @@ private:
 	int clearViewSize = 6;
 	int clearGrayViewSize = 8;
 	int grayViewSize = 15;
+	float mapScrollingSpeed = 10.f;
 
 	void loadMap(unsigned char arr[tileRow][tileColumn]);
 	void passExploreMap(int playerLocXGrid, int playerLocYGrid, float playerDirectionX, float playerDirectionY, unsigned char (&currentExploreMap)[tileRow][tileColumn]);

@@ -43,8 +43,6 @@ void UserInterface::characterOverlayUI(int windowWidth, int windowHeight, Textur
 
 void UserInterface::handleOpenCloseBag(SoundData& soundData)
 {
-	if (IsKeyPressed(KEY_C))
-	{
 		if (IsKeyPressed(KEY_I))
 		{
 			if (isBagOpen)
@@ -56,7 +54,6 @@ void UserInterface::handleOpenCloseBag(SoundData& soundData)
 				openBag(soundData);
 			}
 		}
-	}
 }
 
 void UserInterface::openBag(SoundData& soundData)

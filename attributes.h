@@ -3,6 +3,8 @@
 class Attributes
 {
 public:
+	friend class GameState;
+
 	inline const int getPlayerLevel() const { return playerLevel; }
 	inline void addToPlayerLevel(int amount) { playerLevel += amount; }
 	inline void setPlayerLevel(int amount) { playerLevel = amount; }
