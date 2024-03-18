@@ -46,10 +46,10 @@ public:
 	void handleInventoryIsFull(SoundData& soundData);
 
 private:
+	int goldCount = 0;
 	int currentBagSize = 0;
 	int maxBagSize = 16;
 	int maxToolbarSize = 10;
-	int goldCount = 0;
 	bool canAddGear = true;
 
 	std::vector<Item> items;

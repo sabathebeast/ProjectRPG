@@ -71,6 +71,18 @@ Logic::Logic()
 	}
 	lua_close(L);
 
+	inputFile.open("saveGame.txt");
+	std::string input;
+
+	if (!inputFile.fail())
+	{
+		while (inputFile >> input)
+		{
+			inputData.push_back(input);
+		}
+	}
+	inputFile.close();
+
 	textureData.initialize();
 	soundData.initialize();
 	constructMapEntities();
@@ -93,7 +105,19 @@ void Logic::createAllGameEntity()
 	scene.createBasicGameEntity(400, 400, textureData.getTextures()[*Textures::Key], "key");
 	scene.createEntitiyWithCollision(200 - textureData.getTextures()[*Textures::Tree].width / 2.f, 260 - textureData.getTextures()[*Textures::Tree].height / 2.f, textureData.getTextures()[*Textures::Tree], "tree");
 
-	loadGame();
+	//loadGame();
+
+	addEverythingToSaveGame();
+
+	entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
+	playerView.each([this](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
+		{
+			if (tag.tag == "player")
+			{
+				position.x = playerLocation.x;
+				position.y = playerLocation.y;
+			}
+		});
 
 	if (!inventory.getItems().empty())
 	{
@@ -196,10 +220,10 @@ void Logic::drawObject()
 				collisionComponent.isPlayerBehind = false;
 			}
 
-			if (collisionComponent.isPlayerBehind == false)
-			{
-				DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
-			}
+	if (collisionComponent.isPlayerBehind == false)
+	{
+		DrawTexture(texture.texture, static_cast<int>(position.x + xScrollingOffset), static_cast<int>(position.y + yScrollingOffset), WHITE);
+	}
 		});
 
 	entt::basic_view playerView = scene.registry.view<const TagComponent, const PositionComponent, const Sprite2DComponent, const ActiveComponent>();
@@ -700,33 +724,12 @@ void Logic::handleLevels()
 
 void Logic::saveGame()
 {
+	saveTheGame = true;
+
 	outputFile.open("saveGame.txt");
 	if (!outputFile.fail())
 	{
-		addToSaveGame("name", playerName);
-		addToSaveGame("isNameGiven", isNameGiven);
-		addToSaveGame("goldCount", inventory.getGoldCount());
-		addToSaveGame("playerLocationX", playerLocation.x);
-		addToSaveGame("playerLocationY", playerLocation.y);
-		addToSaveGame("questReturnValue", questReturnValue);
-		addToSaveGame("playerDirectionX", playerDirection.x);
-		addToSaveGame("playerDirectionY", playerDirection.y);
-		addToSaveGame("xpCount", attributes.getXPCount());
-		addToSaveGame("playerLevel", attributes.getPlayerLevel());
-		addToSaveGame("levelXP", attributes.getLevelXP());
-		addToSaveGame("strenght", attributes.getStrenght());
-		addToSaveGame("extraStrenght", attributes.getExtraStrenght());
-		addToSaveGame("agility", attributes.getAgility());
-		addToSaveGame("extraAgility", attributes.getExtraAgility());
-		addToSaveGame("stamina", attributes.getStamina());
-		addToSaveGame("extraStamina", attributes.getExtraStamina());
-		addToSaveGame("currentHealth", attributes.getCurrentHealth());
-		addToSaveGame("maxHealth", attributes.getMaxHealth());
-		addToSaveGame("currentEnergy", attributes.getCurrentEnergy());
-		addToSaveGame("maxEnergy", attributes.getMaxEnergy());
-		addToSaveGame("talentPoints", attributes.getTalentPoints());
-		addToSaveGame("level", (int)level);
-		addToSaveGame("questState", (int)questState);
+		addEverythingToSaveGame();
 	}
 	outputFile.close();
 
@@ -777,7 +780,6 @@ void Logic::loadGame()
 				}
 				else if (inputData[i] == "playerLocationX")
 				{
-
 					entt::basic_view playerView = scene.registry.view<const TagComponent, PositionComponent, const Sprite2DComponent, const ActiveComponent>();
 					playerView.each([this, &i](const TagComponent& tag, PositionComponent& position, const Sprite2DComponent& sprite, const ActiveComponent& active)
 						{
@@ -875,7 +877,6 @@ void Logic::loadGame()
 				else if (inputData[i] == "questState")
 				{
 					questState = (QuestState)std::stoi(inputData[i + 2]);
-					continue;
 				}
 			}
 		}
@@ -965,6 +966,34 @@ void Logic::modifyPlayerSpeedOnRuntime()
 		}
 	}
 	lua_close(L);
+}
+
+void Logic::addEverythingToSaveGame()
+{
+	addToSaveGame("name", playerName);
+	addToSaveGame("isNameGiven", isNameGiven);
+	//addToSaveGame("goldCount", );
+	addToSaveGame("playerLocationX", playerLocation.x);
+	addToSaveGame("playerLocationY", playerLocation.y);
+	addToSaveGame("questReturnValue", questReturnValue);
+	addToSaveGame("playerDirectionX", playerDirection.x);
+	addToSaveGame("playerDirectionY", playerDirection.y);
+	/*addToSaveGame("xpCount", attributes.getXPCount());
+	addToSaveGame("playerLevel", attributes.getPlayerLevel());
+	addToSaveGame("levelXP", attributes.getLevelXP());
+	addToSaveGame("strenght", attributes.getStrenght());
+	addToSaveGame("extraStrenght", attributes.getExtraStrenght());
+	addToSaveGame("agility", attributes.getAgility());
+	addToSaveGame("extraAgility", attributes.getExtraAgility());
+	addToSaveGame("stamina", attributes.getStamina());
+	addToSaveGame("extraStamina", attributes.getExtraStamina());
+	addToSaveGame("currentHealth", attributes.getCurrentHealth());
+	addToSaveGame("maxHealth", attributes.getMaxHealth());
+	addToSaveGame("currentEnergy", attributes.getCurrentEnergy());
+	addToSaveGame("maxEnergy", attributes.getMaxEnergy());
+	addToSaveGame("talentPoints", attributes.getTalentPoints());
+	addToSaveGame("questState", (int)questState);*/
+	//addToSaveGame<Level(int)>("level", level);
 }
 
 void Logic::Update()
