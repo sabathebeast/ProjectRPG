@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "entity.h"
 #include "components.h"
+#include "map.h"
 
 Entity Scene::createEntity(std::string tag)
 {
@@ -38,4 +39,18 @@ void Scene::createEntitiyWithCollision(float posX, float posY, Texture texture, 
 	gameEntity.addComponent<PositionComponent>(posX, posY);
 	gameEntity.addComponent<TextureComponent>(texture);
 	gameEntity.addComponent<ColllisionComponent>();
+}
+
+void Scene::constructMapEntities()
+{
+	for (int row = 0; row < Map::tileRow; row++)
+	{
+		for (int column = 0; column < Map::tileColumn; column++)
+		{
+			float posX = static_cast<float>(column * Map::tileWidth);
+			float posY = static_cast<float>(row * Map::tileHeight);
+
+			createMapEntities(posX, posY, "tile");
+		}
+	}
 }

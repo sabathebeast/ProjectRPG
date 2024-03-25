@@ -11,5 +11,5 @@ public:
 	Vector2 location = { 0.f, 0.f };
 	Vector2 direction = { 0.f, 0.f };
 	std::string name = "";
-	bool isNameGiven = true;
+	bool isNameGiven = false;
 };

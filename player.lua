@@ -1,3 +1,5 @@
+io.write("Player Script Loaded...\n")
+
 playerSpeed = 200
 
 function AddStuff(a, b)

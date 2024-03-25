@@ -10,14 +10,10 @@
 #include "textureData.h"
 #include "soundData.h"
 #include "userInterface.h"
-#include "LUA/include/lua.hpp"
 #include <iostream>
 #include "gameState.h"
 #include "player.h"
-
-#ifdef _WIN64
-#pragma comment(lib, "LUA/liblua54.a")
-#endif // _WIN64
+#include "luaVM.h"
 
 Scene scene;
 DialogueTree dialogue;
@@ -29,54 +25,13 @@ SoundData soundData;
 UserInterface userInterface;
 GameState gameState;
 Player player;
-
-bool checkLua(lua_State* L, int r)
-{
-	if (r != LUA_OK)
-	{
-		std::string errormsg = lua_tostring(L, -1);
-		std::cout << errormsg << std::endl;
-		return false;
-	}
-	return true;
-}
-
-int lua_HostFunction(lua_State* L)
-{
-	float a = (float)lua_tonumber(L, 1);
-	float b = (float)lua_tonumber(L, 2);
-	std::cout << "[C++] HostFunction(" << a << ", " << b << ") called" << std::endl;
-	float c = a * b;
-	lua_pushnumber(L, c);
-	return 1;
-}
+LuaVM luaVM;
 
 Logic::Logic()
 {
-	lua_State* L = luaL_newstate();
-	luaL_openlibs(L);
-
-	lua_register(L, "HostFunction", lua_HostFunction);
-
-	if (checkLua(L, luaL_dofile(L, "player.lua")))
-	{
-		lua_getglobal(L, "DoAThing");
-		if (lua_isfunction(L, -1))
-		{
-			lua_pushnumber(L, 5.f);
-			lua_pushnumber(L, 6.f);
-
-			if (checkLua(L, lua_pcall(L, 2, 1, 0)))
-			{
-				printf("%f", (float)lua_tonumber(L, -1));
-			}
-		}
-	}
-	lua_close(L);
-
 	textureData.initialize();
 	soundData.initialize();
-	constructMapEntities();
+	scene.constructMapEntities();
 	createAllGameEntity();
 	getPlayerFramesXY();
 	dialogue.init();
@@ -711,77 +666,18 @@ void Logic::handleLevels()
 		});
 }
 
-void Logic::constructMapEntities()
-{
-	for (int row = 0; row < Map::tileRow; row++)
-	{
-		for (int column = 0; column < Map::tileColumn; column++)
-		{
-			float posX = static_cast<float>(column * Map::tileWidth);
-			float posY = static_cast<float>(row * Map::tileHeight);
-
-			scene.createMapEntities(posX, posY, "tile");
-		}
-	}
-}
-
-void Logic::modifyPlayerSpeedOnRuntime()
-{
-	lua_State* L = luaL_newstate();
-
-	if (luaL_dofile(L, "player.lua") == LUA_OK)
-	{
-		lua_getglobal(L, "playerSpeed");
-		if (lua_isnumber(L, -1))
-		{
-			player.speed = static_cast<float>(lua_tonumber(L, -1));
-		}
-	}
-	lua_close(L);
-}
-
 void Logic::Update()
 {
-	if (!player.isNameGiven && inMainMenu)
+	if (userInterface.inMainMenu)
 	{
-		int textBoxWidth = windowWidth / 2;
-		int textBoxHeight = windowHeight / 14;
-
-		int key = GetCharPressed();
-		while (key > 0)
+		if (!player.isNameGiven)
 		{
-			if ((key >= 32) && (key <= 125) && (letterCount < MAX_NAME_CHAR))
-			{
-				name[letterCount] = (char)key;
-				name[letterCount + 1] = '\0';
-				letterCount++;
-			}
-			key = GetCharPressed();
+			userInterface.menuAndName(player, windowWidth, windowHeight);
 		}
-		if (IsKeyPressed(KEY_BACKSPACE))
-		{
-			letterCount--;
-			if (letterCount < 0) letterCount = 0;
-			name[letterCount] = '\0';
-		}
-		int annoText = MeasureText("Please type your name!", 25);
-		DrawRectangle(windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, annoText, 30, RED);
-		DrawText("Please type your name!", windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, 25, BLACK);
-		DrawRectangle(windowWidth / 2 - textBoxWidth / 2, windowHeight / 2 - textBoxHeight / 2, textBoxWidth, textBoxHeight, BLACK);
-		int nameTextSize = MeasureText(TextFormat("%s", name), 40);
-		DrawText(name, windowWidth / 2 - nameTextSize / 2, windowHeight / 2 - 20, 40, MAROON);
-		int enterText = MeasureText("and hit enter..", 25);
-		DrawRectangle(windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2, enterText, 30, RED);
-		DrawText("and hit enter..", windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2 + 5, 25, BLACK);
-		if (IsKeyPressed(KEY_ENTER))
-		{
-			player.isNameGiven = true;
-			player.name = name;
-		}
+		userInterface.inMainMenu = false;
 	}
 	else
 	{
-		modifyPlayerSpeedOnRuntime();
 		double currentTime = GetTime();
 		float deltaTime = GetFrameTime();
 		UpdateMusicStream(soundData.getThemeSong());

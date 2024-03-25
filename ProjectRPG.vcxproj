@@ -134,6 +134,7 @@
     <ClCompile Include="gameState.cpp" />
     <ClCompile Include="inventory.cpp" />
     <ClCompile Include="logic.cpp" />
+    <ClCompile Include="luaVM.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="scene.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="gameState.h" />
     <ClInclude Include="inventory.h" />
     <ClInclude Include="logic.h" />
+    <ClInclude Include="luaVM.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="scene.h" />

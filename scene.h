@@ -17,6 +17,7 @@ public:
 	void createAnimatedGameEntity(float posX, float posY, Texture texture, int currentFrame, int frameCount, int frameSpeed, int framesX, int framesY, float sourceX, float sourceY, const char* tag);
 	void createMapEntities(float posX, float posY, const char* tag);
 	void createEntitiyWithCollision(float posX, float posY, Texture texture, const char* tag);
+	void constructMapEntities();
 	
 private:
 	Entity createEntity(std::string tag);

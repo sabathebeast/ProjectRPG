@@ -2,7 +2,6 @@
 
 #include "raylib.h"
 #include <vector>
-#include <fstream>
 #include <string>
 #include <array>
 #include "enum.h"
@@ -23,12 +22,8 @@ public:
 
 private:
 	int questReturnValue = 0;
-	int letterCount = 0;
-	bool inMainMenu = true;
 	float xScrollingOffset = 0.f;
 	float yScrollingOffset = 0.f;
-	
-	char name[MAX_NAME_CHAR + 1] = "\0";
 
 	Level level = Level::level_0;
 	QuestState questState = QuestState::None;
@@ -40,8 +35,6 @@ private:
 	void playerMovement(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
-	void constructMapEntities();
-	void modifyPlayerSpeedOnRuntime();
 
 	template <typename ...Args>
 	auto registerLuaFunction(const char* name)

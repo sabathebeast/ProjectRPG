@@ -5,6 +5,7 @@
 #include "soundData.h"
 #include "inventory.h"
 #include "scene.h"
+#include "player.h"
 
 void UserInterface::characterOverlayUI(int windowWidth, int windowHeight, TextureData& textureData, Attributes& attributes, std::string playerName)
 {
@@ -43,17 +44,17 @@ void UserInterface::characterOverlayUI(int windowWidth, int windowHeight, Textur
 
 void UserInterface::handleOpenCloseBag(SoundData& soundData)
 {
-		if (IsKeyPressed(KEY_I))
+	if (IsKeyPressed(KEY_I))
+	{
+		if (isBagOpen)
 		{
-			if (isBagOpen)
-			{
-				closeBag(soundData);
-			}
-			else
-			{
-				openBag(soundData);
-			}
+			closeBag(soundData);
 		}
+		else
+		{
+			openBag(soundData);
+		}
+	}
 }
 
 void UserInterface::openBag(SoundData& soundData)
@@ -462,5 +463,43 @@ void UserInterface::handleOpenCloseCharacterInfo()
 		{
 			isCharacterInfoOpen = true;
 		}
+	}
+}
+
+void UserInterface::menuAndName(Player& player, int windowWidth, int windowHeight)
+{
+	int textBoxWidth = windowWidth / 2;
+	int textBoxHeight = windowHeight / 14;
+
+	int key = GetCharPressed();
+	while (key > 0)
+	{
+		if ((key >= 32) && (key <= 125) && (letterCount < MAX_NAME_CHAR))
+		{
+			name[letterCount] = (char)key;
+			name[letterCount + 1] = '\0';
+			letterCount++;
+		}
+		key = GetCharPressed();
+	}
+	if (IsKeyPressed(KEY_BACKSPACE))
+	{
+		letterCount--;
+		if (letterCount < 0) letterCount = 0;
+		name[letterCount] = '\0';
+	}
+	int annoText = MeasureText("Please type your name!", 25);
+	DrawRectangle(windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, annoText, 30, RED);
+	DrawText("Please type your name!", windowWidth / 2 - annoText / 2, windowHeight / 2 - textBoxHeight / 2 - 30, 25, BLACK);
+	DrawRectangle(windowWidth / 2 - textBoxWidth / 2, windowHeight / 2 - textBoxHeight / 2, textBoxWidth, textBoxHeight, BLACK);
+	int nameTextSize = MeasureText(TextFormat("%s", name), 40);
+	DrawText(name, windowWidth / 2 - nameTextSize / 2, windowHeight / 2 - 20, 40, MAROON);
+	int enterText = MeasureText("and hit enter..", 25);
+	DrawRectangle(windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2, enterText, 30, RED);
+	DrawText("and hit enter..", windowWidth / 2 - enterText / 2, windowHeight / 2 + textBoxHeight / 2 + 5, 25, BLACK);
+	if (IsKeyPressed(KEY_ENTER))
+	{
+		player.isNameGiven = true;
+		player.name = name;
 	}
 }
