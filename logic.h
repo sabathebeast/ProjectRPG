@@ -35,13 +35,4 @@ private:
 	void playerMovement(float deltaTime);
 	void getPlayerFramesXY();
 	void handleLevels();
-
-	template <typename ...Args>
-	auto registerLuaFunction(const char* name)
-	{
-		return [](Args ...args)
-			{
-
-			};
-	}
 };

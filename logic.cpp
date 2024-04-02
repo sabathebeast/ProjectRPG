@@ -35,6 +35,11 @@ Logic::Logic()
 	createAllGameEntity();
 	getPlayerFramesXY();
 	dialogue.init();
+
+	if (luaVM.getLuaState())
+	{
+		player.speed = luaVM.getLuaVariable<float>("playerSpeed");
+	}
 }
 
 Logic::~Logic()
@@ -692,5 +697,14 @@ void Logic::Update()
 		userInterface.toolBarUI(windowWidth, windowHeight, textureData, attributes, player.location, player.direction, player.framesY, inventory, scene);
 		userInterface.characterInfoUI(windowWidth, windowHeight, attributes);
 		inventory.handleInventoryIsFull(soundData);
+
+		if (IsKeyPressed(KEY_N))
+		{
+			if (luaVM.getLuaState())
+			{
+				player.speed = luaVM.callLuaFunction<float>("addToPlayerSpeed", 500.f);
+				luaVM.setLuaVariable("playerSpeed", player.speed);
+			}
+		}
 	}
 }
