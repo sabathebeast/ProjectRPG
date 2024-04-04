@@ -14,17 +14,31 @@ public:
 	template<typename T, typename... Args>
 	T callLuaFunction(const std::string& functionName, Args... args) {
 		lua_getglobal(luaStatePtr, functionName.c_str());
-		pushArgsToStack(args...);
 
-		if (lua_pcall(luaStatePtr, sizeof...(args), 1, 0) != LUA_OK) {
-			std::cerr << "Error calling Lua function: " << lua_tostring(luaStatePtr, -1) << std::endl;
-			lua_pop(luaStatePtr, 1);
+		lua_Debug ar;
+		lua_pushvalue(luaStatePtr, -1);
+		lua_getinfo(luaStatePtr, ">u", &ar);
+		int expectedArgs = ar.nparams;
+		lua_pop(luaStatePtr, 1);
+
+		lua_getglobal(luaStatePtr, functionName.c_str());
+		pushArgsToStack(args...);
+		int pushedArgs = sizeof...(args);
+
+		if (expectedArgs == pushedArgs)
+		{
+			if (checkLua(luaStatePtr, lua_pcall(luaStatePtr, pushedArgs, 1, 0)))
+			{
+				T result = popResultFromStack<T>(luaStatePtr);
+				lua_pop(luaStatePtr, 1);
+				return result;
+			}
+		}
+		else
+		{
+			std::cerr << "FAIL on " << "'" << functionName << "'" << " expected " << expectedArgs << " arguments" << " and got " << pushedArgs << std::endl;
 			return T();
 		}
-
-		T result = popResultFromStack<T>(luaStatePtr);
-		lua_pop(luaStatePtr, 1);
-		return result;
 	}
 
 	template <typename T>
