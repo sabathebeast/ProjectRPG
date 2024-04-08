@@ -702,7 +702,7 @@ void Logic::Update()
 		{
 			if (luaVM.getLuaState())
 			{
-				player.speed = luaVM.callLuaFunction<float>("addToPlayerSpeed", 500.f);
+				player.speed = luaVM.callLuaFunction<float>("addToPlayerSpeed", 500);
 				luaVM.setLuaVariable("playerSpeed", player.speed);
 			}
 		}

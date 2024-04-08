@@ -2,6 +2,7 @@
 
 #include "LUA/include/lua.hpp"
 #include <iostream>
+#include <typeinfo>
 
 class LuaVM
 {
@@ -64,24 +65,27 @@ private:
 	void pushValueToStack(T value) {
 		if (luaStatePtr)
 		{
-			if constexpr (std::is_same_v<T, int>) {
-				lua_pushinteger(luaStatePtr, value);
+			if constexpr (std::is_integral_v<T>) {
+				if constexpr (std::is_same_v<T, bool>) {
+					lua_pushboolean(luaStatePtr, value);
+				}
+				else
+				{
+					lua_pushinteger(luaStatePtr, value);
+				}
 			}
-			else if constexpr (std::is_same_v<T, float>) {
+			else if constexpr (std::is_floating_point_v<T>) {
 				lua_pushnumber(luaStatePtr, value);
 			}
 			else if constexpr (std::is_same_v<T, const char*>) {
 				lua_pushstring(luaStatePtr, value);
-			}
-			else if constexpr (std::is_same_v<T, bool>) {
-				lua_pushboolean(luaStatePtr, value);
 			}
 			else if constexpr (std::is_same_v<T, std::string>) {
 				lua_pushstring(luaStatePtr, value.c_str());
 			}
 			else
 			{
-				std::cerr << "Error pushing value to stack: " << lua_tostring(luaStatePtr, -1) << std::endl;
+				std::cerr << "Error pushing value to stack: " << lua_tostring(luaStatePtr, -1) << " type: " << typeid(T).name() << std::endl;
 				return 1;
 			}
 		}
@@ -97,44 +101,44 @@ private:
 
 	template <typename T>
 	T popResultFromStack(lua_State* L) {
-		if constexpr (std::is_same_v<T, int>) {
+		if constexpr (std::is_integral_v<T>) {
 			if (!lua_isinteger(L, -1)) {
-				std::cerr << "Lua return value is not an integer" << std::endl;
+				std::cerr << "Lua return value is not an integer, it actually is a: " << typeid(T).name() << std::endl;
 				return T();
 			}
 			return (T)lua_tointeger(L, -1);
 		}
-		else if constexpr (std::is_same_v<T, float>) {
+		else if constexpr (std::is_floating_point_v<T>) {
 			if (!lua_isnumber(L, -1)) {
-				std::cerr << "Lua return value is not a float" << std::endl;
+				std::cerr << "Lua return value is not a float, it actually is a: " << typeid(T).name() << std::endl;
 				return T();
 			}
 			return (T)lua_tonumber(L, -1);
 		}
 		else if constexpr (std::is_same_v<T, const char*>) {
 			if (!lua_isstring(L, -1)) {
-				std::cerr << "Lua return value is not a char*" << std::endl;
+				std::cerr << "Lua return value is not a char*, it actually is a: " << typeid(T).name() << std::endl;
 				return T();
 			}
 			return (T)lua_tostring(L, -1);
 		}
 		else if constexpr (std::is_same_v<T, bool>) {
 			if (!lua_isboolean(L, -1)) {
-				std::cerr << "Lua return value is not a boolean" << std::endl;
+				std::cerr << "Lua return value is not a boolean, it actually is a: " << typeid(T).name() << std::endl;
 				return T();
 			}
 			return (T)lua_toboolean(L, -1);
 		}
 		else if constexpr (std::is_same_v<T, std::string>) {
 			if (!lua_isstring(L, -1)) {
-				std::cerr << "Lua return value is not a string" << std::endl;
+				std::cerr << "Lua return value is not a string, it actually is a: " << typeid(T).name() << std::endl;
 				return T();
 			}
 			return std::string(lua_tostring(L, -1));
 		}
 		else
 		{
-			std::cerr << "Error popping result from stack: " << lua_tostring(L, -1) << std::endl;
+			std::cerr << "Error popping result from stack: " << lua_tostring(L, -1) << " type: " << typeid(T).name() << std::endl;
 			return 1;
 		}
 	}

@@ -1,7 +1,7 @@
 name : Csabi
-playerLocationX : 613.008
-playerLocationY : 285.847
-playerDirectionX : -5.87905
+playerLocationX : 517.347
+playerLocationY : 257.348
+playerDirectionX : -6.08138
 isNameGiven : 1
 playerDirectionY : 0
 gold : 0
@@ -15,7 +15,7 @@ agility : 5
 extraAgility : 0
 stamina : 10
 extraStamina : 0
-currentHealth : 221.5
+currentHealth : 250
 maxHealth : 250
 currentEnergy : 100
 maxEnergy : 100
