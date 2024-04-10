@@ -7,6 +7,7 @@
 #include "enum.h"
 
 struct Sprite2DComponent;
+struct lua_State;
 
 class Logic
 {
@@ -19,6 +20,8 @@ public:
 	static constexpr int windowHeight = 1024;
 	static constexpr int windowWidth = 1024;
 	static constexpr char MAX_NAME_CHAR = 6;
+
+	void updatePlayerPosition(lua_State* L);
 
 private:
 	int questReturnValue = 0;

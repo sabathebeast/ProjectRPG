@@ -32,6 +32,7 @@ bool LuaVM::checkLua(lua_State* L, int r)
 	{
 		std::string errormsg = lua_tostring(L, -1);
 		std::cout << errormsg << std::endl;
+		lua_pop(L, 1);
 		return false;
 	}
 	return true;

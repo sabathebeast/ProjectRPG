@@ -12,8 +12,15 @@ public:
 
 	inline const bool getLuaState() const { return isLuaOk; }
 
+	template<typename Func>
+	void registerFunction(const std::string& name, Func func) {
+		lua_pushlightuserdata(luaStatePtr, (void*)&func);
+		lua_pushcclosure(luaStatePtr, &functionWrapper<Func>, 1);
+		lua_setglobal(luaStatePtr, name.c_str());
+	}
+
 	template<typename T, typename... Args>
-	T callLuaFunction(const std::string& functionName, Args... args) {
+	T callFunction(const std::string& functionName, Args... args) {
 		lua_getglobal(luaStatePtr, functionName.c_str());
 
 		lua_Debug ar;
@@ -30,9 +37,16 @@ public:
 		{
 			if (checkLua(luaStatePtr, lua_pcall(luaStatePtr, pushedArgs, 1, 0)))
 			{
-				T result = popResultFromStack<T>(luaStatePtr);
-				lua_pop(luaStatePtr, 1);
-				return result;
+				if constexpr (std::is_same_v<T, void>)
+				{
+					return T();
+				}
+				else
+				{
+					T result = popResultFromStack<T>(luaStatePtr);
+					lua_pop(luaStatePtr, 1);
+					return result;
+				}
 			}
 		}
 		else
@@ -40,6 +54,8 @@ public:
 			std::cerr << "FAIL on " << "'" << functionName << "'" << " expected " << expectedArgs << " arguments" << " and got " << pushedArgs << std::endl;
 			return T();
 		}
+
+		return T();
 	}
 
 	template <typename T>
@@ -60,6 +76,13 @@ private:
 	lua_State* luaStatePtr = nullptr;
 	bool checkLua(lua_State* L, int r);
 	bool isLuaOk = false;
+
+	template<typename Func>
+	static int functionWrapper(lua_State* L) {
+		Func* func = (Func*)lua_touserdata(L, lua_upvalueindex(1));
+		(*func)(L);
+		return 0;
+	}
 
 	template <typename T>
 	void pushValueToStack(T value) {
@@ -139,7 +162,6 @@ private:
 		else
 		{
 			std::cerr << "Error popping result from stack: " << lua_tostring(L, -1) << " type: " << typeid(T).name() << std::endl;
-			return 1;
 		}
 	}
 };

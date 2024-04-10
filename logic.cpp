@@ -39,6 +39,7 @@ Logic::Logic()
 	if (luaVM.getLuaState())
 	{
 		player.speed = luaVM.getLuaVariable<float>("playerSpeed");
+		luaVM.registerFunction("lua_updatePlayerPosition", [this](lua_State* L) {updatePlayerPosition(L); });
 	}
 }
 
@@ -671,6 +672,11 @@ void Logic::handleLevels()
 		});
 }
 
+void Logic::updatePlayerPosition(lua_State* L)
+{
+	printf("\nC++ updatePlayerPosition called!");
+}
+
 void Logic::Update()
 {
 	if (userInterface.inMainMenu)
@@ -702,8 +708,10 @@ void Logic::Update()
 		{
 			if (luaVM.getLuaState())
 			{
-				player.speed = luaVM.callLuaFunction<float>("addToPlayerSpeed", 500);
-				luaVM.setLuaVariable("playerSpeed", player.speed);
+				//player.speed = luaVM.callFunction<float>("addToPlayerSpeed", 500);
+				//luaVM.setLuaVariable("playerSpeed", player.speed);
+
+				luaVM.callFunction<void>("updatePlayerPosition");
 			}
 		}
 	}
