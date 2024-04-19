@@ -1,9 +1,9 @@
 name : Csabi
-playerLocationX : 456.679
-playerLocationY : 558.417
+playerLocationX : 437.909
+playerLocationY : 298.424
 playerDirectionX : 0
 isNameGiven : 1
-playerDirectionY : -0.395774
+playerDirectionY : 0
 gold : 0
 questReturnValue : 0
 xpCount : 0
