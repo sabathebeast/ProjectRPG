@@ -11,128 +11,120 @@ function updatePlayerPosition()
 	lua_updatePlayerPosition()
 end
 
-Q1-Q4 - Fix or improve the implementation of the below methods.
+--Q1 starts
 
- 
-
-Q1 - Fix or improve the implementation of the below methods
-
- 
-
-local function releaseStorage(player)
-
-player:setStorageValue(1000, -1)
-
-end
-
- 
+local function releaseStorage(player, value) --added one more argument for the value
+	local storageValue = -1 --more understandable, not a magic number
+	player:setStorageValue(value, storageValue) --modified function call
+	end
 
 function onLogout(player)
+	if not player then
+		print("Error: player not found!")
+		return false --return early if player is not valid
+	else
+		local value = 1000 --more understandable, not a magic number
 
-if player:getStorageValue(1000) == 1 then
+		if player:getStorageValue(value) == 1 then
+			releaseStorage(player, value)
+		end
 
-addEvent(releaseStorage, 1000, player)
-
+		return true
+	end
 end
 
-return true
+--Q1 ends
 
+--Q2 starts
+
+guilds = 
+	{
+		[1] = {members = 500, name = "Progress"},
+		[2] = {members = 100, name = "Validus"}
+	}
+
+function addGuild(guildName, memberCount)
+    local newIndex = #guilds + 1  --get the next available index
+    guilds[newIndex] = {  
+        members = memberCount,
+        name = guildName
+    } --create the new guild at the new index
 end
 
- 
-
- 
-
-Q2 - Fix or improve the implementation of the below method
-
- 
-
-function printSmallGuildNames(memberCount)
-
--- this method is supposed to print names of all guilds that have less than memberCount max members
-
-local selectGuildQuery = "SELECT name FROM guilds WHERE max_members < %d;"
-
-local resultId = db.storeQuery(string.format(selectGuildQuery, memberCount))
-
-local guildName = result.getString("name")
-
-print(guildName)
-
+function printSmallGuildNames(memberCount) -- this method is supposed to print names of all guilds that have less than memberCount max members
+	for i = 1, #guilds do
+		if guilds[i].members < memberCount then
+			print(guilds[i].name)
+		end
+	end
 end
 
- 
+--Q2 ends
 
- 
+--Q3 starts
 
-Q3 - Fix or improve the name and the implementation of the below method
+function removePlayerFromParty(playerID, partyMemberName) -- better naming, self explanatory
 
- 
+	local player = Player(playerID) -- player can be local to the function
 
-function do_sth_with_PlayerParty(playerId, membername)
+	if not player then
+		print("Player not found.") -- return early if the player is not found
+		return
+	end
 
-player = Player(playerId)
+	local party = player:getParty()
 
-local party = player:getParty()
+	if not party then
+		print("Player is not in a party.") -- return early if there is no party
+		return
+	end
 
- 
+	for k,v in pairs(party:getMembers()) do
 
-for k,v in pairs(party:getMembers()) do
-
-    if v == Player(membername) then
-
-        party:removeMember(Player(membername))
-
-    end
-
+		if v == Player(partyMemberName) then
+			party:removeMember(v) -- simplified version
+			break -- if we found the one we can break the loop
+		end
+	end
 end
 
-end
+--Q3 ends
 
- 
+--Q4 starts
 
-Q4 - Assume all method calls work fine. Fix the memory leak issue in below method
-
- 
-
-void Game::addItemToPlayer(const std::string& recipient, uint16_t itemId)
-
+void Game::addItemToPlayer(const std::string& recipient, uint16_t itemID)
 {
+	Player* player = g_game.getPlayerByName(recipient); --or use std::unique_ptr<Player>
 
-Player* player = g_game.getPlayerByName(recipient);
+	if (!player) 
+	{
+		player = new Player(nullptr);
 
-if (!player) {
+		if (!IOLoginData::loadPlayerByName(player, recipient)) 
+		{
+			delete player; --delete player to prevent memory leaks
+			return;
+		}
+	}
 
-player = new Player(nullptr);
+	Item* item = Item::CreateItem(itemID); --or use std::unique_ptr<Item> item
 
-if (!IOLoginData::loadPlayerByName(player, recipient)) {
+	if (!item) 
+	{
+		delete item; --if Item::CreateItem(itemID) allocates memory on the heap
+		delete player; --delete player to prevent memory leaks
+		return;
+	}
 
-return;
+	g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT);
 
+	if (player->isOffline())
+	{
+		IOLoginData::savePlayer(player);
+	}
+
+	delete item; --if Item::CreateItem(itemID) allocates memory on the heap
+	delete player; --delete player to prevent memory leaks
 }
 
-}
-
- 
-
-Item* item = Item::CreateItem(itemId);
-
-if (!item) {
-
-    return;
-
-}
-
- 
-
-g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT);
-
- 
-
-if (player->isOffline()) {
-
-    IOLoginData::savePlayer(player);
-
-}
-
-}
+--Q4 ends
